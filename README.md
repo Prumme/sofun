@@ -4,7 +4,7 @@ Projet de plateforme de jeux de soirée : un hôte lance des jeux sur un écran 
 
 ## État du projet
 
-Le dépôt contient le socle technique validé : monorepo TypeScript, serveur local autoritaire et atelier interactif du design system. Aucun jeu de production ni parcours complet de room n’est encore disponible.
+Le dépôt contient le socle technique validé, l’infrastructure E2E multijoueur et la création de room côté hôte. L’accueil permet de créer une room et d’afficher son code réel dans un lobby vide. L’atelier du design system reste disponible sur `/design`. L’admission depuis un téléphone, les jeux et le parcours complet de room restent à développer.
 
 ## Documentation
 

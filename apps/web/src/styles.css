@@ -88,3 +88,33 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 @media(max-width:800px) { .container { padding:0 24px; }.version { display:none; }.hero { gap:30px; padding:45px 0; }.hero h1 { font-size:43px; letter-spacing:-2px; }.hero-card { padding-inline:18px; }.preview-bottom { margin-inline:-18px; padding-inline:18px; }.hero-card .mini-label { font-size:8px; }.game-card { padding:18px; }.workshop-note { flex-wrap:wrap; gap:8px; }.workshop-note p { flex-basis:100%; order:3; }.small-pill { margin-left:auto; }.states-section { grid-template-columns:1fr; gap:20px; }.section-hint { display:none; }.component-panel { padding:20px; } }
 @media(max-width:600px) { .header-inner { height:72px; gap:20px; }.brand { font-size:19px; }.brand-mark { width:32px; height:32px; margin-right:7px; }nav { gap:0; font-size:11px; }nav a:last-child { display:none; }.hero { grid-template-columns:1fr; gap:32px; padding:40px 0 30px; }.hero h1 { font-size:48px; }.hero-card { display:none; }.hero-copy { font-size:14px; }.game-grid,.component-grid { grid-template-columns:1fr; }.game-card { padding:24px; }.game-card p { min-height:0; }.game-top { margin-bottom:18px; }.section { padding-top:36px; }h2 { font-size:23px; }.game-category { font-size:9px; }.game-footer { font-size:11px; }.component-panel { padding:24px; }.button { font-size:12px; }footer { flex-wrap:wrap; }footer>span:last-child { display:none; }.states-section { padding-bottom:36px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+
+/* Host room creation: reuse the design system, with larger shared-screen typography. */
+.host-page { min-height: 100dvh; display: flex; flex-direction: column; }
+.host-mode,.host-design-link { display: inline-flex; align-items: center; gap: 9px; color: var(--muted-foreground); font-size: 12px; }
+.host-design-link:hover { color: var(--foreground); }
+.host-main { width: 100%; flex: 1; padding-top: 30px; padding-bottom: 64px; }
+.host-connection { display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 24px; font-size: 12px; }
+.host-welcome,.host-lobby { padding-top: 70px; }
+.host-page h1 { font-size: clamp(36px, 4.6vw, 62px); line-height: 1.16; letter-spacing: -.045em; margin: 24px 0; }
+.host-intro { font-size: 18px; color: var(--muted-foreground); line-height: 1.8; margin: 0 0 32px; }
+.host-create-button { min-height: 54px; font-size: 15px; padding: 14px 24px; }
+.host-local-note { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); font-size: 12px; margin-top: 18px; }
+.host-outline { display: flex; align-items: center; gap: 18px; margin-top: 64px; padding-top: 26px; border-top: 1px solid var(--border); max-width: 580px; color: var(--muted-foreground); }
+.host-outline strong { font-weight: 500; color: var(--foreground); font-size: 14px; }
+.host-outline p { font-size: 12px; margin: 4px 0 0; }
+.host-alert { display: flex; gap: 12px; align-items: center; color: var(--destructive); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-top: 24px; }
+.host-alert svg { flex-shrink: 0; }.host-alert p { margin: 0; }
+.host-network-notice { margin-top: 20px; color: var(--muted-foreground); }.host-network-notice p { margin: 0 0 12px; }
+.host-lobby { text-align: center; padding-top: 42px; }
+.host-lobby .eyebrow { justify-content: center; }
+.host-code-card { padding: 32px; margin: 36px auto; max-width: 720px; }
+.host-code-label { color: var(--muted-foreground); font-size: 12px; letter-spacing: .2em; font-weight: 500; }
+.host-room-code { display: block; font-size: clamp(36px, 7vw, 88px); line-height: 1.7; letter-spacing: .13em; padding-left: .13em; color: var(--foreground); font-weight: 600; user-select: all; }
+.host-code-caption { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--muted-foreground); }
+.host-code-caption svg { color: var(--success); }
+.host-waiting-icon { display: inline-flex; padding: 14px; color: var(--primary); border-radius: var(--radius); background: var(--card); }
+.host-waiting h2 { font-size: 22px; margin-top: 16px; }.host-waiting p { color: var(--muted-foreground); font-size: 14px; margin-top: 10px; }
+.host-footer { width: 100%; padding: 24px 40px; font-size: 11px; }
+@media(min-width:1600px) { .host-page h1 { font-size: 76px; }.host-room-code { font-size: 108px; }.host-intro { font-size: 22px; } }
+@media(max-width:600px) { .host-mode { display: none; }.host-connection { justify-content: flex-start; }.host-welcome { padding-top: 42px; }.host-intro { font-size: 16px; }.host-lobby { padding-top: 36px; }.host-code-card { padding: 22px 14px; }.host-code-caption { font-size: 11px; }.host-outline { margin-top: 40px; }.host-code-label { font-size: 11px; }.host-main { padding-bottom: 40px; }.host-footer { padding: 20px 24px; } }

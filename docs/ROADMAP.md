@@ -79,4 +79,12 @@ R8 peut être réalisée après R2. Le code manuel permet de développer le quiz
 - Réutiliser les fixtures simples de R0 et les composants/tokens existants. Ajouter les helpers métier au moment où les vrais écrans existent.
 - Exécuter `pnpm check` et `pnpm test:e2e` avant livraison ; garder la recette matérielle de R9 distincte de l’émulation mobile.
 
-Après R0, la prochaine tâche reste R1. Les vérifications de branche, de PR et l’éventuelle CI ne modifient pas cet ordre fonctionnel.
+## Livraison R1
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (17 tests Vitest) et `pnpm test:e2e` réussi (18 tests bureau/mobile). Les captures de l’accueil et du lobby ont été inspectées. La recette sur télévision et smartphones physiques reste R9.
+
+La création de room côté hôte est implémentée : accueil `/`, appel du service existant, code réel et lobby vide, verrou de double clic, chargement et erreurs de connexion. L’atelier reste accessible sur `/design`. Le client attend la fin d’une éventuelle restauration avant d’autoriser la création ; les contrats et le backend sont inchangés.
+
+Les tests vérifient le code reçu du serveur, la commande unique lors d’un double clic, la coupure pendant la requête, l’indisponibilité initiale et deux rooms indépendantes dans des contextes distincts. Les contrôles unitaires couvrent aussi la validation des instantanés, l’attente de restauration et le rejet des réponses d’une ancienne connexion.
+
+La prochaine tâche est R2. L’admission, les contrôles de départ/fermeture, le parcours complet de reprise et les jeux restent aux étapes suivantes. Les objectifs et dépendances de R2 à R9 restent inchangés.
