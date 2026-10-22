@@ -7,7 +7,7 @@ test('loads the application for a host and two independent participants', async 
 
   for (const actor of actors) {
     await test.step(`${actor.name}: application and live server connection`, async () => {
-      await actor.page.goto('/');
+      await actor.page.goto('/design');
       await expect(actor.page.getByRole('heading', { level: 1 })).toHaveText('Le jeu commenceavec vous.');
       await expect(actor.page.getByTestId('connection-status')).toHaveText('Serveur connecté');
       await actor.page.getByLabel('Votre pseudo').fill(actor.name);
@@ -23,7 +23,7 @@ test('loads the application for a host and two independent participants', async 
 
 test('starts each actor group without inherited browser storage or session credentials', async ({ createActors, baseURL }) => {
   const first = await createActors(0);
-  await first.host.page.goto('/');
+  await first.host.page.goto('/design');
   await first.host.page.evaluate(() => {
     localStorage.setItem('e2e-isolation', 'first-host');
     sessionStorage.setItem('e2e-isolation', 'first-host');
@@ -32,7 +32,7 @@ test('starts each actor group without inherited browser storage or session crede
 
   const { host, players } = await createActors(1);
   for (const actor of [host, ...players]) {
-    await actor.page.goto('/');
+    await actor.page.goto('/design');
     await expect(actor.page.getByTestId('connection-status')).toHaveText('Serveur connecté');
     expect(await actor.context.cookies()).toEqual([]);
     expect(await actor.page.evaluate(() => ({

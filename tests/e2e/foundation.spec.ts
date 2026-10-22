@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 test('design system and real server connection', async ({ page }, testInfo) => {
-  await page.goto('/');
+  await page.goto('/design');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Le jeu commenceavec vous.');
   await expect(page.getByTestId('connection-status')).toHaveText('Serveur connecté');
   const cards = page.getByRole('button', { name: /MUSIQUE & SOUVENIRS/ });
@@ -17,7 +17,7 @@ test('design system and real server connection', async ({ page }, testInfo) => {
   await page.screenshot({ path: testInfo.outputPath('atelier.png'), fullPage: true });
 });
 test('recovers a real connection after network interruption', async ({ page, context }) => {
-  await page.goto('/');
+  await page.goto('/design');
   await expect(page.getByTestId('connection-status')).toHaveText('Serveur connecté');
   await context.setOffline(true);
   await expect(page.getByTestId('connection-status')).toHaveText('Connexion en cours', { timeout: 45000 });
@@ -26,7 +26,7 @@ test('recovers a real connection after network interruption', async ({ page, con
 });
 test('keyboard focus, reduced motion and locally served fonts', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/design');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Aller au contenu' })).toBeFocused();
   await page.keyboard.press('Enter');

@@ -69,7 +69,7 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Aucun jeu de production, catalogue interactif métier, écran de room ou QR code dans ce socle.
+- Le lobby hôte de R1 permet la création et l’affichage du code. Aucun jeu de production, catalogue interactif métier, écran d’admission joueur ou QR code n’est encore disponible.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
 - Premier jeu, public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
@@ -81,3 +81,11 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 La configuration Playwright existante est étendue, sans changer l’architecture applicative. L’exécution compile le frontend et le backend, puis démarre un processus Nest mémoire dédié sur la boucle locale, servant aussi React et Socket.IO. Le setup vérifie backend et HTML frontend. Le serveur de développement et son `.env` ne sont pas réutilisés.
 
 Un seul worker exécute initialement les tests. Les acteurs sont des contextes navigateur indépendants et éphémères, fermés après chaque scénario. Le serveur est neuf par exécution ; les futures rooms seront créées via l’interface pour chaque test et fermées via l’interface dès que R3 le permettra. Aucun endpoint de test ni réinitialisation artificielle n’est ajouté au produit. Traces, captures sur échec et rapport HTML complètent les diagnostics. Voir [le guide de développement](DEVELOPMENT.md) et [la roadmap](ROADMAP.md).
+
+## Parcours hôte — R1
+
+L’accueil React utilise `room:create` et les `room:snapshot` existants pour afficher un lobby hôte vide. Les contrats réseau et le backend ne changent pas. `/design` conserve l’atelier ; ces deux entrées utilisent une sélection simple de page sans nouveau routeur ni dépendance.
+
+Le client expose un statut de connexion distinguant transport, restauration et disponibilité de session. La création est bloquée tant que la session n’est pas prête, puis protégée par un verrou synchrone et un bouton désactivé. L’instantané reçu avant l’accusé est conservé jusqu’à confirmation de la création. Après un accusé non confirmé, un nouvel essai explicite réutilise l’UUID de requête pour profiter de la déduplication existante sur la même connexion. Aucun rejeu automatique de création n’est effectué à la reconnexion. Les réponses tardives d’une ancienne connexion sont ignorées ; les secrets de session restent dans le stockage de session du navigateur.
+
+L’atelier n’effectue pas de reprise de session, afin de ne pas remplacer une connexion hôte. L’admission des joueurs, les contrôles de départ/fermeture et les règles de jeu ne sont pas ajoutés par R1.

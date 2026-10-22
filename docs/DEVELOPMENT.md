@@ -9,7 +9,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-La page initiale est l’atelier du design system : les cartes ne lancent aucun jeu. Le statut de connexion utilise le vrai serveur Socket.IO. Aucun parcours de room complet n’est encore livré.
+L’accueil `/` permet à l’hôte de créer une room sur le vrai serveur Socket.IO et d’afficher son code dans un lobby vide. Le bouton attend une connexion prête et reste désactivé pendant la création ; une requête non confirmée affiche une erreur et peut être réessayée explicitement. L’atelier du design system est conservé sur `/design` ; ses cartes ne lancent aucun jeu. L’admission des joueurs et le parcours complet de room ne sont pas encore livrés.
 
 ## Réseau local
 
@@ -81,7 +81,7 @@ test('mon scénario', async ({ createActors }) => {
 
 Chaque acteur possède son propre `BrowserContext`, sa page, ses cookies et ses stockages. L’hôte utilise un profil desktop, les participants un profil mobile, indépendamment du projet exécutant le scénario. La fixture ferme tous ses contextes en fin de test, même si une assertion ou la création d’un acteur échoue. Playwright collecte les diagnostics de ces contextes avant leur fermeture.
 
-Les tests actuels vérifient seulement le chargement multicontexte et l’indépendance des navigateurs : ils ne prétendent pas encore tester une room ou une partie. Dès R1/R2, créer une nouvelle room par scénario par l’interface, puis utiliser le code affiché ; ne jamais partager un code, un token ou un `storageState` de développement entre tests. Dès R3, fermer les rooms via l’interface lorsque possible. Le serveur mémoire est partagé pendant une exécution séquentielle et supprimé à sa fin ; aucune route artificielle de reset n’est ajoutée.
+Les smoke tests multicontextes vérifient le chargement de l’atelier sur `/design` et l’indépendance des navigateurs. Les tests R1 créent de vraies rooms depuis `/`, vérifient le code reçu du serveur, la protection contre le double clic et les erreurs de connexion. Ils ne testent pas encore l’admission de joueurs ni une partie. Dès R1/R2, créer une nouvelle room par scénario par l’interface, puis utiliser le code affiché ; ne jamais partager un code, un token ou un `storageState` de développement entre tests. Dès R3, fermer les rooms via l’interface lorsque possible. Le serveur mémoire est partagé pendant une exécution séquentielle et supprimé à sa fin ; aucune route artificielle de reset n’est ajoutée.
 
 Dès R2, chaque comportement impliquant plusieurs joueurs doit être testé dans plusieurs contextes ; dès R5, une partie complète doit pouvoir être jouée automatiquement, sans action humaine. Vérifier les comportements visibles, pas uniquement les réponses réseau. Attendre les locators, URL ou états attendus avec les assertions Playwright ; éviter les `waitForTimeout` arbitraires.
 
@@ -100,3 +100,9 @@ pnpm exec playwright show-trace test-results/CHEMIN-DU-TEST/trace.zip
 Le terminal affiche le résultat de chaque test. Le rapport HTML est généré dans `playwright-report/`, sans ouverture automatique. Les traces et captures d’écran des échecs sont conservées dans `test-results/` et liées dans le rapport. Les succès ne conservent pas de trace ; le test historique de l’atelier produit aussi sa capture de contrôle. Chaque passage remplace les résultats précédents : copier les diagnostics à conserver avant de relancer. Ces dossiers sont ignorés par Git et peuvent contenir les informations visibles d’une session de test ; utiliser uniquement des données de test.
 
 La [roadmap](ROADMAP.md) décrit les étapes R0 à R9 et la stratégie d’isolation. La vérification sur vrais téléphones et télévision reste une recette distincte.
+
+### Périmètre de la création de room (R1)
+
+Le lobby ne propose encore ni admission, ni lancement de jeu, ni fermeture manuelle. Le code affiché provient exclusivement de l’instantané validé du serveur et n’est présenté comme créé qu’après confirmation de l’accusé. Les credentials restent dans `sessionStorage`, sans apparaître dans l’URL ni dans le document. Le client distingue connexion, restauration et disponibilité avant d’autoriser la création ; l’atelier n’effectue pas de reprise de session hôte. La reprise technique déjà existante est conservée, mais les parcours complets de rechargement, départ et fermeture restent R3.
+
+Un test de transport retient momentanément la vraie commande Socket.IO pour vérifier le bouton désactivé et empêcher deux créations. Il relaie ensuite la commande au vrai serveur et compare son code à l’interface ; un autre coupe la connexion avant l’envoi pour vérifier l’erreur. Aucune réponse de succès ni room n’est fabriquée. Les tests continuent d’attendre des événements ou états réels, sans `waitForTimeout`.

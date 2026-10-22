@@ -54,3 +54,7 @@ Cette liste constitue une base de discussion, pas un engagement de livraison.
 - Initialisation limitée aux fondations et à la démonstration visuelle ; les jeux, le QR code et les pages de room viendront ensuite.
 
 Les questions ci-dessus concernant ces points sont résolues par ce périmètre ; les règles du premier jeu et la capacité cible restent à définir.
+
+## Première étape de parcours — R1
+
+La création de room côté hôte est autorisée après R0. L’accueil doit permettre de créer une room réelle et d’afficher son code dans un lobby vide, avec un état de chargement, une protection contre les doubles clics et un message en cas d’échec. Cette étape réutilise les services existants. L’admission depuis un smartphone reste R2, le cycle de vie complet R3 et le quiz R4 à R7 ; voir [la roadmap](ROADMAP.md).
