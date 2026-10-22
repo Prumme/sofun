@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "experimentalDecorators": true
+  },
+  "include": [
+    "../apps/server/test/**/*.ts",
+    "../packages/**/*.test.ts",
+    "e2e/**/*.ts",
+    "../playwright.config.ts",
+    "../vitest.config.ts"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "party-games",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "dev": "pnpm build:packages && node scripts/dev.mjs",
+    "build:packages": "pnpm --filter @party/contracts build && pnpm --filter @party/game-sdk build",
+    "build": "pnpm build:packages && pnpm --filter @party/web build && pnpm --filter @party/server build",
+    "lint": "eslint .",
+    "typecheck": "pnpm build:packages && pnpm -r typecheck && tsc -p tests/tsconfig.json",
+    "test": "pnpm build:packages && vitest run",
+    "test:watch": "pnpm build:packages && vitest",
+    "test:e2e": "pnpm build && playwright test",
+    "start": "node --env-file-if-exists=.env apps/server/dist/main.js",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "typescript-eslint": "8.72.0",
+    "typescript": "5.9.3",
+    "@types/node": "24.19.2",
+    "vitest": "3.2.7",
+    "@playwright/test": "1.64.1",
+    "globals": "16.5.0"
+  }
+}
