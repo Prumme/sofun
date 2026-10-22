@@ -1,0 +1,56 @@
+# Vision produit
+
+## Intention
+
+Permettre à un groupe de partager des jeux de soirée autour d'un écran commun, avec des smartphones comme moyens de participation lorsque le jeu le nécessite.
+
+## Éléments établis
+
+- Un hôte peut lancer des jeux sur un écran partagé, ordinateur ou télévision.
+- Les participants peuvent rejoindre une session depuis leur smartphone.
+- Certains jeux pourront se jouer sans téléphone.
+
+Le fonctionnement sans téléphone concerne le mode de participation. L’exécution sans accès Internet relève d’une contrainte distincte, précisée dans le périmètre V1 ci-dessous.
+
+## Utilisateurs et usages
+
+- **Hôte** : prépare et lance la session, présente le jeu au groupe et accompagne son déroulement.
+- **Participants** : rejoignent la session sur smartphone lorsque nécessaire et participent aux jeux.
+- **Groupe autour de l'écran** : suit les informations communes et peut participer aux jeux compatibles sans téléphone.
+
+Ces rôles décrivent les usages envisagés, sans imposer de comptes utilisateurs ni de permissions techniques.
+
+## Fonctionnalités envisagées — à valider
+
+- Création d'une session et accès des participants par un mécanisme simple, par exemple un code ou un QR code.
+- Salle d'attente et visualisation des participants.
+- Choix d'un jeu et présentation de ses règles sur l'écran partagé.
+- Interactions sur smartphone adaptées à chaque jeu : réponses, votes ou autres actions.
+- Déroulement en manches, affichage de résultats et scores lorsque pertinent.
+- Jeux ou modes avec participation orale ou collective sans téléphone.
+- Gestion du départ et du retour d'un participant.
+
+Cette liste constitue une base de discussion, pas un engagement de livraison.
+
+## Questions produit ouvertes
+
+- Quel public viser et dans quel contexte : amis, famille, événements ou autres ?
+- Quels jeux et quel parcours constituent la première version ?
+- Combien de participants et d'équipes faut-il prendre en charge ?
+- Quels appareils, navigateurs et modes d'affichage sur télévision faut-il supporter ?
+- Quels outils de modération faut-il proposer au-delà des sessions invitées avec pseudonyme ?
+- Quels besoins d'accessibilité, langues et contraintes de connexion faut-il couvrir ?
+- Quelles données conserver, pendant combien de temps et pour quelle finalité ?
+- Quels critères permettront d'évaluer la réussite d'une première version ?
+
+## Périmètre du socle validé le 22 octobre 2026
+
+- Exécution locale sur un LAN de confiance, sans hébergement public pour la V1. Les ressources web et polices sont embarquées.
+- Écran hôte distinct des joueurs ; l’hôte qui souhaite jouer rejoint séparément sur téléphone.
+- Jeux sans téléphone via les actions de l’hôte, sans joueurs virtuels dans le socle.
+- Pas de pause ni transfert automatique en cas de déconnexion de l’hôte.
+- Pas de comptes ; sessions invitées et reprise dans le même onglet.
+- Nettoyage après deux heures sans connexion, sans récupération après redémarrage du serveur.
+- Initialisation limitée aux fondations et à la démonstration visuelle ; les jeux, le QR code et les pages de room viendront ensuite.
+
+Les questions ci-dessus concernant ces points sont résolues par ce périmètre ; les règles du premier jeu et la capacité cible restent à définir.

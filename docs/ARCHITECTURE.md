@@ -1,0 +1,77 @@
+# Architecture et décisions techniques
+
+## Décision validée le 22 octobre 2026
+
+Le plan d’initialisation a été validé : monolithe modulaire dans un monorepo TypeScript strict, un processus serveur autoritaire, une application web hôte/joueur. Aucun microservice, Docker obligatoire, base de données ni compte utilisateur.
+
+### Pile
+
+- React et Vite ; Tailwind CSS et composants shadcn/ui adaptés localement.
+- NestJS et Socket.IO ; validation Zod à l’entrée et à la sortie.
+- pnpm workspaces, packages ESM compilés, TypeScript strict.
+- Vitest (unitaires et intégration Nest/Socket.IO) et Playwright (application compilée, bureau/mobile).
+- Node 24, pnpm 9.15.9 ; versions résolues dans `pnpm-lock.yaml`.
+
+## Frontières
+
+| Ensemble | Responsabilité |
+| --- | --- |
+| `apps/web` | Interfaces, intentions, connexion et reprise ; aucun calcul métier fiable. |
+| `apps/server/src/rooms` | Cycle de vie, admission, orchestration et file séquentielle par room. |
+| `apps/server/src/sessions` | Identités hôte/joueur, secrets et connexions. |
+| `apps/server/src/realtime` | Transport, validation et envoi individuel des vues. |
+| `apps/server/src/engine` | Registre, transitions et validation des effets. |
+| `apps/server/src/games` | Jeux indépendants, enregistrés explicitement. |
+| `apps/server/src/storage` | Port `RoomStore`, adaptateur mémoire. |
+| `packages/contracts` | Schémas Zod et types réseau, sans état secret ni dépendance Nest/React. |
+| `packages/game-sdk` | Interfaces internes, contextes, transitions et effets déclaratifs. |
+
+Le frontend importe uniquement les contrats partagés. Le serveur dépend des contrats et du SDK. Le SDK n’utilise que les types communs des contrats et les types Zod. Aucun jeu n’importe un autre jeu.
+
+Le module Nest racine assure le câblage par injection ; les services métier restent des classes et fonctions indépendantes de Nest. L’injection explicite évite de dépendre des métadonnées de paramètres dans les transformations Vitest.
+
+## Rooms et sessions
+
+- Une room possède un identifiant interne et un code public à six caractères non ambigus.
+- Plusieurs rooms coexistent ; une seule partie active par room, plusieurs parties successives.
+- L’hôte est distinct des joueurs ; participer nécessite une autre session sur téléphone.
+- L’admission de nouveaux joueurs est limitée au lobby. Une identité existante peut revenir pendant une partie.
+- La session est indépendante du `socket.id`. Un secret aléatoire de 256 bits permet sa reprise ; une nouvelle connexion remplace la précédente.
+- Le serveur stocke l’empreinte du secret. Les réponses initiales contenant les secrets sont temporairement conservées dans le cache de déduplication de la connexion ; elles disparaissent à sa déconnexion ou à la fermeture de la room. Aucun secret dans les URL, projections ou journaux.
+- Le navigateur utilise `sessionStorage` : reprise après rechargement dans l’onglet, aucune garantie après fermeture de l’onglet.
+- Une déconnexion conserve la place. Un départ explicite supprime la place au lobby ; pendant la partie, l’identité reste jusqu’au retour au lobby, sans possibilité de reprendre la session quittée.
+- Le départ de l’hôte n’entraîne ni pause ni transfert : les minuteries continuent.
+- Expiration après deux heures continues sans connexion, vérifiée chaque minute. Le redémarrage du processus perd tout état.
+
+## Moteur autoritaire
+
+Chaque jeu définit configuration, intentions validées, état interne, transitions, minuteries et projection par destinataire. Les effets déclaratifs se limitent à programmer/annuler une minuterie. Les événements internes ne sont pas automatiquement envoyés aux clients.
+
+Le moteur fournit temps, hasard et participants. Une action reçoit l’acteur authentifié par le serveur ; un client ne peut pas déclarer son rôle ni imposer un score. Les jeux ne font ni I/O ni accès au stockage. Les états sont clonés aux frontières des callbacks pour éviter une mutation de l’état courant.
+
+Les transitions valident toutes les projections avant publication. L’hôte reçoit une vue d’écran partagé, sans privilège implicite sur les secrets. Les instantanés complets sont envoyés individuellement, jamais l’état interne à toute une room.
+
+Chaque commande, déconnexion et minuterie est ordonnée dans la file de sa room. Les autres rooms restent indépendantes. Les minuteries sont associées à une partie, annulées à la fin et ignorées après remplacement/fermeture.
+
+## Protocole
+
+Événements entrants : `room:create`, `room:join`, `room:leave`, `room:close`, `session:resume`, `game:start`, `game:action`. Réponse par accusé Socket.IO validé, avec `requestId`, succès ou erreur structurée. Événement sortant : `room:snapshot`.
+
+Le client fournit un UUID de requête. Le serveur retient les 256 derniers résultats par session ; les opérations d’établissement/reprise sont dédupliquées par connexion. Un identifiant réutilisé pour un contenu différent est refusé. La protection est bornée ; elle ne promet pas une exécution exactement une fois après éviction ou fin de session.
+
+Une intention de jeu vise l’identifiant de partie et la révision observée. Un état obsolète est refusé avec publication d’une projection fraîche. La reprise authentifie puis renvoie un instantané complet, sans rejeu automatique d’intentions en attente. Les messages malformés conservent leur UUID de requête s’il est valide ; sinon, l’erreur reçoit un nouvel UUID serveur.
+
+## Réseau et confiance
+
+LAN de confiance en HTTP : les secrets protègent les identités applicatives, pas contre l’écoute du réseau. Aucun hébergement public prévu. Les navigateurs doivent utiliser la même origine que le serveur/proxy ou `PUBLIC_ORIGIN` explicitement configurée. Charge utile Socket.IO limitée à 64 Kio.
+
+En développement, Vite écoute toutes les interfaces sur 5173 par défaut et relaie `/api` et `/socket.io` vers Nest sur la boucle locale 3000 par défaut. `WEB_PORT` et `PORT` permettent de changer ces ports ensemble avec la configuration du proxy. En exécution compilée, Nest sert les ressources web et Socket.IO sur le même port LAN. Les clients utilisent des chemins relatifs. Police et ressources sont locales ; pas de CDN à l’exécution.
+
+## Limites et décisions encore ouvertes
+
+- Aucun jeu de production, catalogue interactif métier, écran de room ou QR code dans ce socle.
+- Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
+- Premier jeu, public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
+- Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
+- Un stockage durable demandera une nouvelle décision de concurrence et de reprise ; remplacer la Map ne suffit pas.
+- Protections de branches, politique de fusion et hébergement de CI à convenir.
