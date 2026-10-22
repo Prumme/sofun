@@ -54,3 +54,49 @@ Ouvrir `http://ADRESSE_LAN:3000`. `HOST` et `PORT` configurent cette exécution 
 Exécuter `pnpm check` et, pour un changement d’interface ou de transport, `pnpm test:e2e`. Les tests utilisent un jeu synthétique non enregistré en production. Tester manuellement sur un vrai téléphone après une modification de l’accès LAN ; l’émulation mobile ne vérifie ni Wi-Fi ni pare-feu.
 
 Avant d’étendre les pages, faire valider l’atelier : couleurs, typographie, lisibilité à distance, focus clavier, contrastes, cibles tactiles et mouvement réduit. Les modifications visuelles suivent [DESIGN.md](DESIGN.md).
+
+## E2E multijoueurs (R0)
+
+La configuration unique reste `playwright.config.ts` ; aucune installation supplémentaire de Playwright n’est nécessaire après `pnpm install`. Chromium doit être téléchargé une fois avec la commande ci-dessus.
+
+`pnpm test:e2e` compile les packages, React et Nest, puis démarre un serveur de test neuf sur `127.0.0.1:3100`. Nest sert le frontend compilé et Socket.IO : aucun serveur Vite parallèle n’est nécessaire. Le serveur n’utilise pas le `.env` local ; le démarrage fixe l’adresse d’écoute, le port et l’origine de test. Le port doit être libre : ne pas réutiliser un serveur de développement ni exécuter deux suites simultanément sur ce port.
+
+Playwright attend `/api/health` ; le setup vérifie sa réponse et le HTML frontend avant les scénarios. Les smoke tests vérifient ensuite le rendu réel et la connexion visible au backend. Une seule instance de worker exécute les projets Chromium desktop et mobile, sans retries automatiques.
+
+### Acteurs isolés
+
+Les tests multijoueurs importent `test` et `expect` depuis `tests/e2e/fixtures/actors.ts` :
+
+```ts
+import { test, expect } from './fixtures/actors.js';
+
+test('mon scénario', async ({ createActors }) => {
+  const { host, players } = await createActors(2);
+  await host.page.goto('/');
+  for (const player of players) await player.page.goto('/');
+  await expect(host.page.getByTestId('connection-status')).toHaveText('Serveur connecté');
+  // Ajouter les vraies interactions hôte/joueurs lorsque les écrans seront livrés.
+});
+```
+
+Chaque acteur possède son propre `BrowserContext`, sa page, ses cookies et ses stockages. L’hôte utilise un profil desktop, les participants un profil mobile, indépendamment du projet exécutant le scénario. La fixture ferme tous ses contextes en fin de test, même si une assertion ou la création d’un acteur échoue. Playwright collecte les diagnostics de ces contextes avant leur fermeture.
+
+Les tests actuels vérifient seulement le chargement multicontexte et l’indépendance des navigateurs : ils ne prétendent pas encore tester une room ou une partie. Dès R1/R2, créer une nouvelle room par scénario par l’interface, puis utiliser le code affiché ; ne jamais partager un code, un token ou un `storageState` de développement entre tests. Dès R3, fermer les rooms via l’interface lorsque possible. Le serveur mémoire est partagé pendant une exécution séquentielle et supprimé à sa fin ; aucune route artificielle de reset n’est ajoutée.
+
+Dès R2, chaque comportement impliquant plusieurs joueurs doit être testé dans plusieurs contextes ; dès R5, une partie complète doit pouvoir être jouée automatiquement, sans action humaine. Vérifier les comportements visibles, pas uniquement les réponses réseau. Attendre les locators, URL ou états attendus avec les assertions Playwright ; éviter les `waitForTimeout` arbitraires.
+
+### Exécution et résultats
+
+```sh
+pnpm test:e2e
+# Après un build, répéter les scénarios sans recompiler :
+pnpm exec playwright test --repeat-each=2
+# Rapport HTML du dernier passage :
+pnpm exec playwright show-report
+# Trace d’un échec (reprendre le chemin affiché par Playwright) :
+pnpm exec playwright show-trace test-results/CHEMIN-DU-TEST/trace.zip
+```
+
+Le terminal affiche le résultat de chaque test. Le rapport HTML est généré dans `playwright-report/`, sans ouverture automatique. Les traces et captures d’écran des échecs sont conservées dans `test-results/` et liées dans le rapport. Les succès ne conservent pas de trace ; le test historique de l’atelier produit aussi sa capture de contrôle. Chaque passage remplace les résultats précédents : copier les diagnostics à conserver avant de relancer. Ces dossiers sont ignorés par Git et peuvent contenir les informations visibles d’une session de test ; utiliser uniquement des données de test.
+
+La [roadmap](ROADMAP.md) décrit les étapes R0 à R9 et la stratégie d’isolation. La vérification sur vrais téléphones et télévision reste une recette distincte.

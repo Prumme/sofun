@@ -15,6 +15,7 @@ Le dépôt contient le socle technique validé : monorepo TypeScript, serveur lo
 - [Conventions de collaboration](docs/CONVENTIONS.md)
 - [Développement local et vérifications](docs/DEVELOPMENT.md)
 - [Ajouter un jeu](docs/ADDING_A_GAME.md)
+- [Roadmap d’implémentation](docs/ROADMAP.md)
 
 ## Démarrage local
 

@@ -75,3 +75,9 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
 - Un stockage durable demandera une nouvelle décision de concurrence et de reprise ; remplacer la Map ne suffit pas.
 - Protections de branches, politique de fusion et hébergement de CI à convenir.
+
+## Infrastructure E2E multijoueur — R0
+
+La configuration Playwright existante est étendue, sans changer l’architecture applicative. L’exécution compile le frontend et le backend, puis démarre un processus Nest mémoire dédié sur la boucle locale, servant aussi React et Socket.IO. Le setup vérifie backend et HTML frontend. Le serveur de développement et son `.env` ne sont pas réutilisés.
+
+Un seul worker exécute initialement les tests. Les acteurs sont des contextes navigateur indépendants et éphémères, fermés après chaque scénario. Le serveur est neuf par exécution ; les futures rooms seront créées via l’interface pour chaque test et fermées via l’interface dès que R3 le permettra. Aucun endpoint de test ni réinitialisation artificielle n’est ajouté au produit. Traces, captures sur échec et rapport HTML complètent les diagnostics. Voir [le guide de développement](DEVELOPMENT.md) et [la roadmap](ROADMAP.md).

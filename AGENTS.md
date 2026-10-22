@@ -18,6 +18,7 @@
 ## Vérification et compte rendu
 
 - Exécuter les tests disponibles et les vérifications pertinentes pour les fichiers modifiés.
+- Consulter la [roadmap](docs/ROADMAP.md). Dès R2, accompagner chaque fonctionnalité multijoueur de tests Playwright avec des `BrowserContext` indépendants ; dès R5, automatiser une partie complète. Vérifier les comportements visibles par les utilisateurs, sans attentes temporelles arbitraires.
 - Si aucun test ou outil de vérification n'est configuré, le signaler ; ne pas prétendre avoir exécuté des tests et ne pas installer d'outillage sans demande.
 - Résumer les changements, les vérifications effectuées, leurs limites et les points restant à valider.
 
