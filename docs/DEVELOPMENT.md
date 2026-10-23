@@ -9,7 +9,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », puis saisir le code et un pseudo. L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; le cycle de vie du lobby et la première question de quiz sont disponibles.
+L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », puis saisir le code et un pseudo. L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; le cycle de vie du lobby et le quiz complet de cinq questions sont disponibles.
 
 ## Réseau local
 
@@ -128,3 +128,11 @@ Créer une room et la rejoindre depuis deux contextes ou téléphones. « Lancer
 `apps/server/test/quiz.test.ts` couvre rôles, configuration, réponses concurrentes sur la même révision, requêtes dédupliquées, choix définitif, mauvaises questions/parties/révisions futures, projection privée, absence de réponse et isolation. Les anciens tests du moteur conservent le contrôle strict de révision pour les jeux sans option de concurrence. `tests/e2e/quiz.spec.ts` vérifie le parcours visible hôte/deux joueurs, les doubles clics, les choix simultanés, la révélation anticipée, les points et une autre room inchangée. Les captures de question et résultats couvrent écran hôte et mobile.
 
 Commande ciblée après compilation : `pnpm exec playwright test quiz`. Les bonnes réponses ne doivent jamais être déplacées dans les contrats ou le frontend. La suite reste sans appels externes ni attentes temporelles arbitraires.
+
+### Partie complète et replay (R5)
+
+Après révélation, utiliser « Question suivante » pour les quatre premières questions, puis « Voir le classement final » après la cinquième. Seul l’hôte peut progresser ou revenir au lobby. « Retour au lobby » conserve la room et les sessions présentes ; un nouveau lancement remet les scores à zéro. Le temps et la révélation restent manuels jusqu’à R6.
+
+`tests/e2e/quiz-complete.spec.ts` automatise deux parties complètes avec un hôte et trois participants dans quatre contextes indépendants. Il vérifie les cinq questions, les réponses réinitialisées, les scores après chaque révélation, les ex æquo, le classement conservé après rechargement, le retour au même code avec les mêmes identités et un second résultat différent. Un participant ne répond pas pour couvrir l’absence de réponse. Le test ferme sa room par l’interface. Les captures du classement hôte/mobile sont disponibles dans les résultats.
+
+Les tests serveur de quiz couvrent aussi les questions distinctes, les contrôles de rôle/phase sur `next` et `return-lobby`, les actions d’une ancienne question ou partie, la remise à zéro et le nettoyage des départs volontaires au retour au lobby. Les tests R4 d’une seule question sont conservés. Commande ciblée après compilation : `pnpm exec playwright test quiz-complete`.

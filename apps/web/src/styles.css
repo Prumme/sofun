@@ -172,3 +172,11 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 .quiz-player .quiz-choices { grid-template-columns: 1fr; gap: 12px; }
 .quiz-player .quiz-choice { font-size: 17px; min-height: 62px; padding: 16px; }
 @media(max-width: 540px) { .quiz-choices { grid-template-columns: 1fr; } }
+
+.quiz-total { color: var(--muted-foreground); }
+.quiz-ranking { list-style: none; padding: 0; margin: 28px 0; }
+.quiz-ranking li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 20px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); font-size: 22px; }
+.quiz-ranking li>span { overflow-wrap: anywhere; }
+.quiz-ranking small { display: block; color: var(--muted-foreground); font-size: 13px; margin-top: 6px; }
+.quiz-rank { color: var(--primary); font-weight: 600; }
+.quiz-player .quiz-ranking li { grid-template-columns: 24px minmax(0, 1fr) auto; font-size: 17px; padding: 16px; gap: 10px; }

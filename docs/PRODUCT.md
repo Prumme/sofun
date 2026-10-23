@@ -72,3 +72,9 @@ Recharger le même onglet retrouve le rôle et le pseudo sans nouvelle admission
 L’hôte lance le quiz lorsque le lobby contient au moins deux joueurs. Une question française embarquée propose quatre choix ; chaque joueur valide une seule réponse définitive. Seul le propre choix est visible sur son téléphone avant révélation. L’écran partagé indique combien de réponses sont reçues.
 
 L’hôte révèle manuellement, même si une réponse manque. La solution et les réponses deviennent visibles ; une bonne réponse vaut un point, une mauvaise réponse ou une absence zéro. Les résultats de cette question restent affichés jusqu’à fermeture de la room. L’enchaînement de cinq questions, le classement final et la possibilité de rejouer dans le même lobby relèvent de R5 ; le temps et la révélation automatique de R6.
+
+## Partie complète — R5
+
+Le quiz enchaîne cinq questions dans un ordre fixe. Après chaque révélation, l’hôte consulte les points de la question et le total cumulé, puis choisit « Question suivante ». Après la cinquième révélation, « Voir le classement final » affiche les scores sur cinq à tous les participants. Les ex æquo partagent leur rang (1, 1, 3), avec un ordre d’affichage stable issu du lobby.
+
+Le classement reste affiché jusqu’à ce que l’hôte choisisse « Retour au lobby ». La room conserve son code et les identités encore présentes. L’hôte peut relancer une partie, dont les réponses et les scores repartent de zéro. Les joueurs ayant quitté volontairement ne reviennent pas automatiquement au lobby. Cette étape reste sans chronomètre, avec révélation et progression manuelles.
