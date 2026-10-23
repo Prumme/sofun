@@ -155,7 +155,7 @@ Le test d’intention retardée retient une vraie trame `game:action`, laisse l�
 
 ### Invitations locales (R8)
 
-Sur l’ordinateur hôte, ouvrir l’URL LAN affichée par `pnpm dev`, ou `http://ADRESSE_LAN:3000` pour le build compilé. Le lobby expose ensuite son lien `/join?code=...` et son QR. L’origine et le port proviennent de la page ouverte ; ne pas utiliser `localhost` pour un lien destiné à un téléphone. Le lobby explique ce point et masque le lien/QR si l’origine est une boucle locale ou une adresse d’écoute générique. Aucun endpoint de découverte LAN n’est ajouté.
+Sur l’ordinateur hôte, ouvrir l’URL LAN affichée par `pnpm dev`, ou `http://ADRESSE_LAN:3000` pour le build compilé. Le lobby expose ensuite son lien `/join?code=...` et son QR. L’origine et le port proviennent de la page ouverte ; ne pas utiliser `localhost` pour un lien destiné à un téléphone. Sur une origine de boucle locale ou une adresse d’écoute générique, le lobby utilise désormais la découverte LAN décrite ci-dessous pour afficher un lien/QR accessible aux téléphones.
 
 `tests/e2e/room-invite.spec.ts` utilise le nom `party-games.test` résolu vers la boucle locale par Chromium uniquement dans ce fichier de tests. Les acteurs restent des contextes indépendants, le vrai serveur mémoire est réutilisé et aucun DNS/service externe n’est requis. La configuration Playwright générale est inchangée. Les tests décodent le SVG réellement rendu avec `jsqr` (développement uniquement), vérifient l’URL, puis pilotent l’admission de deux téléphones par le formulaire. Ils couvrent aussi les paramètres invalides, le lien d’une room fermée et le repli vers la saisie manuelle en boucle locale. Les tests unitaires vérifient notamment IPv4 LAN, IPv6, noms d’hôte et ports.
 
@@ -168,3 +168,13 @@ Suivre [RECETTE.md](RECETTE.md) pour le parcours TV/deux smartphones sans WAN, l
 ### QR depuis la page joueur
 
 La page `/join` affiche aussi un QR et un lien pour ouvrir le formulaire sur un téléphone du même Wi-Fi, sans saisir l’adresse IP. Sans code valide, ils pointent vers `/join` ; dès que les six caractères saisis forment un code valide, ils pointent vers `/join?code=CODE`. Un code partiel ou invalide revient au lien sans code. Le pseudo n’est jamais partagé, et aucune admission n’est automatique. Si cet onglet possède déjà une session hôte, la page propose le QR de sa room. L’origine LAN et le port sont conservés ; le repli explicatif sur localhost reste identique au lobby hôte. Le test `room-invite` décode les deux formes et fait rejoindre deux contextes indépendants.
+
+### QR depuis localhost et découverte LAN
+
+Lancer `pnpm dev`, puis ouvrir l’URL localhost affichée. Créer une room : le serveur fournit les adresses IPv4 privées de ses interfaces à travers `/api/network`. Une seule adresse produit automatiquement le QR ; s’il y en a plusieurs, choisir celle du réseau des téléphones. Le port reste celui de la page web. L’adresse et le port affichés par le lien permettent de vérifier la sélection avant le scan. Il n’est pas nécessaire de saisir l’IP dans le navigateur hôte.
+
+Le proxy Vite existant relaie cette nouvelle route `/api` ; aucune modification de sa configuration n’est nécessaire. Avec le build compilé, utiliser `pnpm build` puis `pnpm start` et ouvrir localhost sur le port du serveur. Cette détection suppose que frontend et backend s’exécutent sur la même machine. La connectivité réelle du téléphone reste à tester ; une détection d’adresse ne vérifie pas le pare-feu ni le réseau invité.
+
+En cas d’échec HTTP, de réponse invalide ou d’absence de réponse pendant cinq secondes, un message propose « Réessayer la détection ». Une liste vide est expliquée séparément. La saisie du code et du pseudo est conservée pendant un nouvel essai. Les tests d’invitation contrôlent uniquement les réponses de découverte pour couvrir une/plusieurs/aucune adresse, erreur et reprise ; les rooms et sessions restent réelles. Les IP simulées ne démontrent pas une connexion physique à ces adresses. Le test HTTP serveur vérifie aussi la vraie route `/api/network`, son schéma et l’absence de cache.
+
+Vérifications de la finalisation du 23 octobre 2026 : `pnpm check` réussi (40 tests Vitest, lint, typage strict et compilation), puis `pnpm test:e2e` réussi (72 tests Chromium bureau/mobile, 3,7 minutes, sans retry). Les liens locaux de la documentation et `git diff --check` sont vérifiés. Le retour positif du propriétaire sur l’essai est consigné dans la fiche de recette ; les autres critères matériels R9 restent à renseigner.

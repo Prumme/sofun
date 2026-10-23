@@ -78,7 +78,8 @@ test('invalid invitation codes are explained and remain editable without admitti
   await closeRoom(host.page);
 });
 
-test('loopback access keeps manual entry and explains how to obtain a shareable address', async ({ page }) => {
+test('loopback without a detected LAN address explains manual entry', async ({ page }) => {
+  await page.route('**/api/network', route => route.fulfill({ json: { addresses: [] } }));
   await page.goto('http://127.0.0.1:3100/');
   await expect(page.getByRole('button', { name: 'Créer une room', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Créer une room', exact: true }).click();
@@ -131,4 +132,66 @@ test('join page shares a scannable form, follows valid code edits and retains th
   await host.page.goto('/');
   await expectPlayers(host.page, ['Alice', 'Benoît']);
   await closeRoom(host.page);
+});
+
+
+test('loopback discovers an invitation, preserves the web port and offers an explicit choice for multiple networks', async ({ createActors }) => {
+  const { host, players } = await createActors(2);
+  let addresses = ['192.168.1.23'];
+  // Only OS discovery is controlled; rooms, admission and sessions use the real server.
+  await host.context.route('**/api/network', route => route.fulfill({ json: { addresses } }));
+  await host.page.goto('http://127.0.0.1:3100/');
+  await host.page.getByRole('button', { name: 'Créer une room', exact: true }).click();
+  const code = await host.page.getByTestId('room-code').textContent();
+  const qr = host.page.getByRole('img', { name: 'QR code pour rejoindre la room', exact: true });
+  await expect(qr).toBeVisible();
+  expect((await decodeQr(qr))?.data).toBe(`http://192.168.1.23:3100/join?code=${code}`);
+  for (const [index, player] of players.entries()) {
+    // The CI network need not own the simulated LAN IP; exercise the decoded path on the real test origin.
+    await player.page.goto(`http://127.0.0.1:3100/join?code=${code}`);
+    await player.page.getByLabel('Votre pseudo', { exact: true }).fill(['Alice', 'Benoît'][index]!);
+    await player.page.getByRole('button', { name: 'Rejoindre la room', exact: true }).click();
+  }
+  await expectPlayers(host.page, ['Alice', 'Benoît']);
+  addresses = ['192.168.1.23', '10.8.0.2'];
+  await host.page.reload();
+  const select = host.page.getByLabel('Adresse réseau de l’ordinateur');
+  await expect(select).toHaveValue('');
+  await expect(qr).toHaveCount(0);
+  await select.selectOption('10.8.0.2');
+  await expect(qr).toBeVisible();
+  expect((await decodeQr(qr))?.data).toBe(`http://10.8.0.2:3100/join?code=${code}`);
+  await select.selectOption('192.168.1.23');
+  expect((await decodeQr(qr))?.data).toBe(`http://192.168.1.23:3100/join?code=${code}`);
+  await closeRoom(host.page);
+});
+
+test('discovery failure or an invalid response keeps manual admission available', async ({ page }) => {
+  for (const response of [{ status: 503 }, { json: { addresses: ['127.0.0.1'] } }]) {
+    await page.route('**/api/network', route => route.fulfill(response));
+    await page.goto('http://127.0.0.1:3100/join');
+    await expect(page.getByRole('note')).toContainText('adresse réseau');
+    await expect(page.getByRole('img', { name: /QR code/ })).toHaveCount(0);
+    await expect(page.getByLabel('Code de la room', { exact: true })).toBeEnabled();
+    await page.unroute('**/api/network');
+  }
+});
+
+
+test('discovery can be retried without reloading or losing the entered code and nickname', async ({ page }) => {
+  let available = false;
+  await page.route('**/api/network', route => available
+    ? route.fulfill({ json: { addresses: ['192.168.1.23'] } })
+    : route.fulfill({ status: 503 }));
+  await page.goto('http://127.0.0.1:3100/join');
+  await expect(page.getByRole('note')).toContainText('Impossible de détecter');
+  await page.getByLabel('Code de la room', { exact: true }).fill('ABC234');
+  await page.getByLabel('Votre pseudo', { exact: true }).fill('Alice');
+  available = true;
+  await page.getByRole('button', { name: 'Réessayer la détection', exact: true }).click();
+  const qr = page.getByRole('img', { name: 'QR code pour rejoindre la room', exact: true });
+  await expect(qr).toBeVisible();
+  expect((await decodeQr(qr))?.data).toBe('http://192.168.1.23:3100/join?code=ABC234');
+  await expect(page.getByLabel('Code de la room', { exact: true })).toHaveValue('ABC234');
+  await expect(page.getByLabel('Votre pseudo', { exact: true })).toHaveValue('Alice');
 });
