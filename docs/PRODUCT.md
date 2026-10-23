@@ -53,7 +53,7 @@ Cette liste constitue une base de discussion, pas un engagement de livraison.
 - Nettoyage après deux heures sans connexion, sans récupération après redémarrage du serveur.
 - Initialisation limitée aux fondations et à la démonstration visuelle ; les jeux, le QR code et les pages de room viendront ensuite.
 
-Les questions ci-dessus concernant ces points sont résolues par ce périmètre ; les règles du premier jeu et la capacité cible restent à définir.
+Les questions ci-dessus concernant ces points sont résolues par ce périmètre ; le premier quiz est précisé dans la roadmap validée ; la capacité cible reste à définir.
 
 ## Première étape de parcours — R1
 
@@ -66,3 +66,9 @@ Le parcours joueur permet de rejoindre une room depuis le même réseau, avec le
 ## Cycle de vie du lobby — R3
 
 Recharger le même onglet retrouve le rôle et le pseudo sans nouvelle admission. Une coupure réseau conserve la place, indiquée hors ligne aux autres participants. « Quitter la room » retire volontairement le joueur ; il peut rejoindre à nouveau comme nouvelle session. « Fermer la room », confirmé par l’hôte, met fin à la room pour tous et permet d’en créer une autre. Une session périmée est expliquée et ramène vers une action de création ou d’admission. La fermeture d’un onglet ne constitue pas un départ volontaire ; aucune garantie de reprise après fermeture d’onglet ou redémarrage serveur.
+
+## Première question de quiz — R4
+
+L’hôte lance le quiz lorsque le lobby contient au moins deux joueurs. Une question française embarquée propose quatre choix ; chaque joueur valide une seule réponse définitive. Seul le propre choix est visible sur son téléphone avant révélation. L’écran partagé indique combien de réponses sont reçues.
+
+L’hôte révèle manuellement, même si une réponse manque. La solution et les réponses deviennent visibles ; une bonne réponse vaut un point, une mauvaise réponse ou une absence zéro. Les résultats de cette question restent affichés jusqu’à fermeture de la room. L’enchaînement de cinq questions, le classement final et la possibilité de rejouer dans le même lobby relèvent de R5 ; le temps et la révélation automatique de R6.

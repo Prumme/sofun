@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { QuizPanel } from '@/features/quiz/QuizPanel';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
@@ -114,14 +115,17 @@ export function PlayerJoinPage() {
       </div>
       {error && <div className="host-alert" role="alert"><CircleAlert size={19} aria-hidden="true" /><p>{error}</p></div>}
       {unavailable && <div className="host-network-notice"><p>Vérifiez votre connexion au réseau local et le serveur de l’hôte.</p><Button variant="secondary" onClick={() => { client.current?.disconnect(); client.current?.connect(); }}>Réessayer la connexion</Button></div>}
-      {room ? <section className="player-lobby" aria-labelledby="player-title">
+      {room ? <section className="player-lobby" aria-label="Room joueur">
+        {!room.game && <>
         <div className="eyebrow"><span className="line" /> VOUS ÊTES DANS LA ROOM</div>
         <h1 id="player-title">Bienvenue, <span>{self?.name ?? 'à vous'}.</span></h1>
         <p className="player-intro">La suite se passe aussi sur l’écran partagé.</p>
         <Card className="player-room-card"><span>Code de la room</span><output data-testid="room-code">{room.code}</output></Card>
         <PlayersList players={room.players} viewerId={room.viewer.sessionId} />
+        </>}
+        {room.game && <QuizPanel key={room.game.id} snapshot={room} ready={ready} getClient={() => client.current} />}
         <RoomExit key={room.roomId} role="player" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); lastRequest.current = null; setCode(''); setName(''); }} />
-        <p className="player-wait-note">Installez-vous, la room est prête. Les jeux arrivent prochainement.</p>
+        {!room.game && <p className="player-wait-note">Installez-vous, la room est prête. L’hôte peut lancer le quiz.</p>}
       </section> : snapshot ? <section className="player-join">
         <h1>Cet onglet est <span>l’hôte.</span></h1>
         <p className="player-intro">Utilisez votre téléphone pour rejoindre comme joueur.</p>
