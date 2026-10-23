@@ -58,3 +58,7 @@ Les questions ci-dessus concernant ces points sont résolues par ce périmètre 
 ## Première étape de parcours — R1
 
 La création de room côté hôte est autorisée après R0. L’accueil doit permettre de créer une room réelle et d’afficher son code dans un lobby vide, avec un état de chargement, une protection contre les doubles clics et un message en cas d’échec. Cette étape réutilise les services existants. L’admission depuis un smartphone reste R2, le cycle de vie complet R3 et le quiz R4 à R7 ; voir [la roadmap](ROADMAP.md).
+
+## Admission des joueurs — R2
+
+Le parcours joueur permet de rejoindre une room depuis le même réseau, avec le code affiché par l’hôte et un pseudo. Le formulaire signale un code invalide, un pseudo vide ou une room introuvable. Après admission, l’hôte et les joueurs voient la même liste mise à jour en direct ; le joueur identifie sa propre entrée. Les jeux, le QR code et les contrôles de départ/fermeture restent aux étapes prévues dans la roadmap.

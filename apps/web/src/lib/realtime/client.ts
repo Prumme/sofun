@@ -43,7 +43,7 @@ export function createRealtimeClient(
       if (!response.ok) {
         if (['INVALID_SESSION', 'ROOM_NOT_FOUND'].includes(response.error.code)) {
           clearCredentials();
-          options.onError?.('Cette session n’est plus disponible. Vous pouvez créer une nouvelle room.');
+          options.onError?.('Cette session n’est plus disponible. Vous pouvez recommencer.');
           status('ready');
         } else {
           options.onError?.('Impossible de restaurer la session. Réessayez la connexion.');

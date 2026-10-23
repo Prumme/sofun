@@ -87,4 +87,14 @@ La création de room côté hôte est implémentée : accueil `/`, appel du serv
 
 Les tests vérifient le code reçu du serveur, la commande unique lors d’un double clic, la coupure pendant la requête, l’indisponibilité initiale et deux rooms indépendantes dans des contextes distincts. Les contrôles unitaires couvrent aussi la validation des instantanés, l’attente de restauration et le rejet des réponses d’une ancienne connexion.
 
-La prochaine tâche est R2. L’admission, les contrôles de départ/fermeture, le parcours complet de reprise et les jeux restent aux étapes suivantes. Les objectifs et dépendances de R2 à R9 restent inchangés.
+R2 complète désormais cette étape avec l’admission. Les contrôles de départ/fermeture, le parcours complet de reprise et les jeux restent aux étapes suivantes. Les objectifs et dépendances de R2 à R9 restent inchangés.
+
+## Livraison R2
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (17 tests Vitest, lint, typage strict et builds) et `pnpm test:e2e` réussi (26 tests bureau/mobile). Les captures du formulaire mobile et des lobbies hôte/joueur ont été inspectées. La recette sur appareils physiques reste R9.
+
+L’accueil propose « Rejoindre une room » et le formulaire `/join` utilise la commande et les validations partagées existantes. Le code est normalisé en majuscules, le pseudo est nettoyé de ses espaces extérieurs ; code invalide, pseudo vide et room introuvable sont expliqués et corrigeables. Le formulaire est protégé contre les doubles envois et attend la confirmation du serveur avant d’afficher le lobby.
+
+L’hôte et les participants partagent un composant de liste, alimenté par leurs instantanés respectifs ; chaque joueur repère sa propre entrée. Les tests utilisent des contextes hôte/joueurs indépendants, avec admissions simultanées et deux rooms distinctes. Aucun changement du backend, du protocole ou des dépendances n’est nécessaire.
+
+La prochaine tâche est R3 : recharger, quitter et fermer une room. Les objectifs et dépendances métier de R3 à R9 restent inchangés.
