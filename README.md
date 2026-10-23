@@ -27,7 +27,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Ouvrir l’URL LAN affichée sur l’ordinateur hôte pour obtenir un lien et un QR code utilisables depuis les téléphones du même réseau ; `localhost` n’est pas l’adresse de l’ordinateur hôte sur les autres appareils.
+Ouvrir l’URL localhost affichée sur l’ordinateur hôte : l’application détecte l’adresse LAN pour générer le lien et le QR destinés aux téléphones du même Wi-Fi. Si plusieurs adresses sont détectées, choisir celle du réseau partagé. L’URL LAN affichée reste utilisable directement ; `localhost` ne doit pas être saisi sur les téléphones.
 
 - `pnpm check` : lint, typage strict, tests et compilation.
 - `pnpm exec playwright install chromium` puis `pnpm test:e2e` : tests navigateur.

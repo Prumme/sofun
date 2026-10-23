@@ -58,3 +58,7 @@ Pour contrôler le score, chaque bonne réponse vaut un point, sans bonus de vit
 Pour chaque KO, noter ID du parcours, étape, appareil/navigateur, comportement attendu et obtenu, reproduction et éventuelle capture expurgée. Corriger le défaut de manière ciblée, ajouter un test de régression adapté et rejouer la ligne concernée ainsi que le parcours complet si son déroulement est affecté.
 
 R9 reste ouverte tant que les lignes matérielles ne sont pas exécutées, que l’absence de WAN n’est pas vérifiée ou qu’un défaut bloque le premier parcours. Inscrire ici les résultats réels, leur date et le commit testé, puis actualiser [ROADMAP.md](ROADMAP.md). La capacité au-delà du groupe testé et les navigateurs non essayés restent non validés. Ne pas convertir un succès Chromium émulé en validation de ces appareils.
+
+## Retour sur la découverte LAN — 23 octobre 2026
+
+Le propriétaire a confirmé que l’essai de QR construit avec l’adresse détectée côté serveur fonctionne. Ce retour valide la méthode pour sa finalisation ; il ne renseigne pas les appareils, le parcours complet sans WAN ni toutes les lignes M1 à M11. R9 reste donc ouverte. Pour les prochains essais, l’hôte peut ouvrir localhost et contrôler l’adresse LAN du lien affiché avant le scan.
