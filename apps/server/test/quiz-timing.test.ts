@@ -1,13 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { quizViewSchema } from '@party/contracts';
-import type { CommandName, Snapshot } from '@party/contracts';
+import type { CommandName, Credentials, Snapshot } from '@party/contracts';
 import { Rooms } from '../src/rooms/rooms.js';
 import { Engine } from '../src/engine/engine.js';
 import { MemoryRoomStore } from '../src/storage/room-store.js';
 import { quizDefinition, quizGame } from '../src/games/quiz/quiz.js';
 
 let rooms: Rooms;
+let hostCredentials: Credentials;
 let views: Map<string, Snapshot>;
 function command(actor: string, name: CommandName, data: Record<string, unknown> = {}) { return rooms.command(actor, name, { requestId: randomUUID(), ...data }); }
 function view() {
@@ -25,7 +26,9 @@ beforeEach(async () => {
   rooms = new Rooms(new MemoryRoomStore(), new Engine([quizGame]));
   views = new Map();
   rooms.setEvents({ snapshot: (id, snapshot) => views.set(id, snapshot), replace: () => {} });
-  await command('host', 'room:create');
+  const created = await command('host', 'room:create');
+  if (!created.ok || !created.credentials) throw new Error('Expected host credentials');
+  hostCredentials = created.credentials;
   for (const name of ['Alice', 'Bob']) await command(name, 'room:join', { code: views.get('host')!.code, name });
   await command('host', 'game:start', { gameId: 'quiz', config: {} });
 });
@@ -81,6 +84,18 @@ describe('authoritative quiz deadlines', () => {
     expect(closed!.phase).toBe('closed');
     await vi.advanceTimersByTimeAsync(20_000);
     expect(views.get('C')).toEqual(closed);
+  });
+  it('resumes the host mid-question with the exact original deadline', async () => {
+    const deadline = view().deadline;
+    await vi.advanceTimersByTimeAsync(8_000);
+    await rooms.disconnect('host');
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(await command('resumed-host', 'session:resume', hostCredentials)).toMatchObject({ ok: true });
+    expect(quizViewSchema.parse(views.get('resumed-host')!.game!.view)).toMatchObject({ phase: 'question', deadline });
+    await vi.advanceTimersByTimeAsync(6_999);
+    expect(quizViewSchema.parse(views.get('resumed-host')!.game!.view).phase).toBe('question');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(quizViewSchema.parse(views.get('resumed-host')!.game!.view).phase).toBe('revealed');
   });
   it('ignores an old question timer and reschedules an early callback for the remaining duration', () => {
     const context = { now: Date.now(), players: [{ id: randomUUID(), name: 'Alice' }, { id: randomUUID(), name: 'Bob' }], random: () => 0 };

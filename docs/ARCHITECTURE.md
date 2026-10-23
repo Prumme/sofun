@@ -69,7 +69,7 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R6 joue cinq questions avec temps autoritaire, révélation automatique, classement final et retour au lobby ; résilience complète, catalogue métier et QR code restent à développer.
+- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R6 joue cinq questions avec temps autoritaire, révélation automatique, classement final et retour au lobby ; R7 couvre les interruptions ; catalogue métier et QR code restent à développer.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
 - Public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
@@ -133,3 +133,13 @@ Chaque ouverture de question calcule `deadline = context.now + 20_000` côté se
 Chaque intention de réponse est refusée lorsque `context.now >= deadline`, même si le callback est retardé. La dernière réponse attendue révèle automatiquement ; sinon la minuterie révèle les réponses reçues et attribue zéro aux absences. La révélation manuelle anticipée de l’hôte reste disponible. Toutes ces voies utilisent la même transition de calcul des points et annulent la minuterie, pour créditer chaque question une seule fois. Le passage à la suivante reste une action de l’hôte et crée une nouvelle échéance. Les gardes de question, l’annulation/remplacement de clé et le nettoyage de partie/room réutilisent les garanties existantes du moteur.
 
 Le compte à rebours React est indicatif : différence entre l’échéance serveur et l’heure locale, rafraîchie quatre fois par seconde et bornée entre zéro et vingt. Aucun temps ou score client n’est envoyé au serveur. Une horloge locale décalée peut donc fausser le chiffre affiché ; elle ne révèle pas la solution, ne valide pas une réponse tardive et ne bloque pas une réponse encore valide sur le serveur. Le navigateur attend toujours l’instantané autoritaire de révélation. Aucune synchronisation d’horloges, nouveau transport ou modification du SDK/moteur n’est introduit.
+
+## Interruptions en partie — R7
+
+Les garanties serveur existantes sont conservées : reprise authentifiée par session, instantané complet, remplacement de l’ancienne connexion, file par room, question/phase validées et échéance inchangée. Aucun changement du moteur, des contrats ou du protocole n’est nécessaire. Une coupure ne retire ni réponse ni points, et n’arrête aucune minuterie. Un participant qui revient après le passage à la suivante retrouve la question actuelle, sans réponse ancienne appliquée à celle-ci.
+
+Les contrôles du quiz sont recréés lorsque changent la partie, la question, la phase ou la disponibilité de connexion. Le verrou d’une ancienne intention et les messages liés à son accusé ne peuvent ainsi bloquer ou polluer les contrôles suivants. Les callbacks asynchrones d’un panneau démonté ignorent leur résultat local ; le transport conserve sa garde de génération pour les réponses d’anciennes connexions. Aucune intention en attente n’est rejouée automatiquement par l’interface.
+
+Une déconnexion explicitement imposée par le serveur est signalée avec une action de reconnexion, en conservant l’identité locale. Elle peut résulter d’une reprise par une autre connexion. Après une reprise réussie, les messages de coupure précédents sont retirés de l’écran. Le transport Socket.IO ne reprend pas automatiquement une connexion déconnectée par le serveur : le contrôle reste à la connexion remplaçante jusqu’à une reprise explicite. Le message ne prétend pas connaître la cause exacte au-delà de cette fermeture serveur. Les secrets ne sont ni affichés ni placés dans l’URL.
+
+Les limites restent celles de la V1 : même onglet, serveur mémoire, aucune persistance après redémarrage, aucun transfert automatique d’hôte. Le compteur local reste indicatif ; l’échéance serveur ne se recalcule pas à la reprise.

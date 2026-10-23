@@ -8,10 +8,19 @@ import type { createRealtimeClient } from '@/lib/realtime/client';
 
 type Client = ReturnType<typeof createRealtimeClient>;
 interface Props { snapshot: Snapshot; ready: boolean; getClient: () => Client | null }
-export function QuizPanel({ snapshot, ready, getClient }: Props) {
+export function QuizPanel(props: Props) {
+  const game = props.snapshot.game;
+  const parsed = game?.type === 'quiz' ? quizViewSchema.safeParse(game.view) : null;
+  const scope = parsed?.success ? `${game!.id}:${parsed.data.questionId}:${parsed.data.phase}:${props.ready}` : `lobby:${props.ready}`;
+  // An acknowledgement from an old question/connection must not affect its successor.
+  return <QuizControls key={scope} {...props} />;
+}
+function QuizControls({ snapshot, ready, getClient }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pending = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const host = snapshot.viewer.role === 'host';
   const parsed = snapshot.game?.type === 'quiz' ? quizViewSchema.safeParse(snapshot.game.view) : null;
   const deadline = parsed?.success && parsed.data.phase === 'question' ? parsed.data.deadline : null;
@@ -30,10 +39,10 @@ export function QuizPanel({ snapshot, ready, getClient }: Props) {
       const response = action && snapshot.game
         ? await client.send('game:action', { requestId: createRequestId(), gameId: snapshot.game.id, revision: snapshot.revision, action })
         : await client.send('game:start', { requestId: createRequestId(), gameId: 'quiz', config: {} });
-      if (!response.ok) setError('Action refusée. Vérifiez l’état de la question avant de réessayer.');
+      if (mounted.current && !response.ok) setError('Action refusée. Vérifiez l’état de la question avant de réessayer.');
     } catch {
-      setError('L’action n’a pas pu être confirmée. Vérifiez la connexion et la réponse affichée avant de réessayer.');
-    } finally { pending.current = false; setBusy(false); }
+      if (mounted.current) setError('L’action n’a pas pu être confirmée. Vérifiez la connexion et la réponse affichée avant de réessayer.');
+    } finally { pending.current = false; if (mounted.current) setBusy(false); }
   }
   if (!snapshot.game) return host ? <Card className="quiz-start">
     <h2>Un premier quiz</h2><p>Deux joueurs minimum. Cinq questions, quatre choix, une réponse définitive par question. Un point par bonne réponse. Vingt secondes par question, révélation automatique quand tous ont répondu ou à la fin du temps.</p>

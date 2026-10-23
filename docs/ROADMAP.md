@@ -137,4 +137,14 @@ Le serveur attribue vingt secondes à chaque question et refuse toute réponse t
 
 Les écrans affichent un compte à rebours indicatif, sans envoyer d’heure client ni déclencher eux-mêmes une révélation. Une horloge locale décalée affecte uniquement ce chiffre ; le serveur garde l’autorité. Les tests couvrent l’horloge contrôlée, le callback retardé, la vraie échéance sur trois écrans et une partie complète aux révélations automatiques. Aucun changement de moteur, SDK, transport, dépendances ou configuration d’exécution.
 
-Prochaine étape : R7, fiabiliser les interruptions pendant le quiz. Les objectifs et dépendances de R7 à R9 restent inchangés ; la recette matérielle reste R9.
+R7 fiabilise désormais les interruptions pendant le quiz. Les objectifs et dépendances de R7 à R9 restent inchangés ; la recette matérielle reste R9.
+
+## Livraison R7
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (33 tests Vitest, lint, typage strict et builds). `pnpm test:e2e` réussit 58 tests, puis `pnpm exec playwright test` confirme les 58 tests bureau/mobile après les derniers ajustements de reprise automatique et de messages de connexion. La capture de reprise mobile a été inspectée. La recette physique reste R9.
+
+Les reprises retrouvent l’état autoritaire de la partie : bonne question, réponse définitive et score conservés. Le délai continue sans l’hôte. Une ancienne intention et son accusé ne bloquent pas la question suivante. Une fermeture de connexion imposée par le serveur est expliquée ; la session est conservée et peut être reprise explicitement, sans créer de joueur.
+
+Le serveur possédait déjà les gardes nécessaires : R7 conserve les services, les contrats et le moteur, isole les contrôles asynchrones du quiz par question/phase/connexion et ajoute des tests multiclients de coupure, retour après changement de question, échéance sans hôte et remplacement de connexion.
+
+Prochaine étape : R8, lien d’admission et QR code utilisant l’origine LAN. Les objectifs et dépendances de R8/R9 restent inchangés ; la recette physique complète reste R9.

@@ -119,7 +119,7 @@ Dans le même onglet, recharger l’écran hôte ou joueur reprend la session. L
 
 `tests/e2e/room-lifecycle.spec.ts` utilise des contextes indépendants pour vérifier identités conservées après rechargement, retour réseau sans doublon, départ/réadmission, annulation puis fermeture collective, session périmée hors ligne et secret invalide. Le scénario d’accusé de départ perdu transmet la vraie commande au serveur et retient uniquement sa confirmation ; le joueur vérifie ensuite sa session via l’interface. Aucun succès serveur n’est fabriqué. Les rooms sont fermées par l’hôte à la fin lorsque la session hôte reste disponible ; les rooms devenues inaccessibles disparaissent avec le processus de test.
 
-Commande ciblée après compilation : `pnpm exec playwright test room-lifecycle`. La reprise pendant un quiz sera couverte en R7.
+Commande ciblée après compilation : `pnpm exec playwright test room-lifecycle`. Les interruptions pendant un quiz sont couvertes par R7 ci-dessous.
 
 ### Première question de quiz (R4)
 
@@ -144,3 +144,11 @@ Lancer le quiz puis répondre depuis tous les téléphones pour vérifier la ré
 `apps/server/test/quiz-timing.test.ts` utilise l’horloge contrôlée Vitest : limite à 19 999/20 000 ms, callback retardé, dernière réponse, annulation de l’ancienne minuterie, délai suivant, absence de pause sans hôte, fermeture et callback ancien/précoce. `tests/e2e/quiz-timing.spec.ts` attend la vraie révélation après vingt secondes sur le serveur de test, sans accélérer ni remplacer sa minuterie. Il avance uniquement l’heure d’un navigateur pour vérifier qu’un compteur à zéro ne décide pas du résultat ; la réponse encore valide sur le serveur est acceptée. Les assertions attendent les résultats visibles, sans `waitForTimeout`.
 
 Le scénario de partie complète conserve deux parties de cinq questions ; la seconde utilise la révélation automatique sur la dernière réponse pour toutes les questions. Le test d’échéance ajoute environ vingt secondes par projet bureau/mobile à la suite. Commande ciblée après compilation : `pnpm exec playwright test quiz-timing`. Le transport et la configuration Playwright restent inchangés.
+
+### Interruptions et connexions remplacées (R7)
+
+`tests/e2e/quiz-reconnection.spec.ts` couvre, dans des contextes indépendants, la réponse retrouvée après coupure/rechargement, le retour sur la question suivante avec score conservé, l’expiration réelle pendant l’absence de l’hôte, la reprise d’une identité par une connexion remplaçante et une intention retardée de l’ancienne question. Le test de délai conserve les vingt secondes réelles du serveur ; aucune pause serveur ni attente temporelle arbitraire.
+
+Le test de remplacement copie explicitement les credentials produits dans le scénario vers un autre contexte éphémère pour modéliser deux connexions revendiquant la même identité. Cette copie est limitée à ce test ; elle ne modifie pas la fixture d’isolation ni la politique de stockage du produit. L’ancien écran est désactivé ; le nouvel écran conserve réponse et score. Une reprise explicite peut reprendre le contrôle, sans boucle automatique entre les connexions.
+
+Le test d’intention retardée retient une vraie trame `game:action`, laisse l’hôte révéler et avancer, puis transmet la trame d’origine au vrai serveur. Elle est refusée pour la nouvelle question ; la réponse valide à cette dernière reste possible et son résultat est affiché sans erreur obsolète. Aucun succès ni instantané n’est fabriqué. Commande ciblée après compilation : `pnpm exec playwright test quiz-reconnection`. La suite complète continue de jouer deux parties en R5/R6.

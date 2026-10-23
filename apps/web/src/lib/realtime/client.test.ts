@@ -32,8 +32,8 @@ describe('realtime client', () => {
     storage.set('party-games.session', JSON.stringify(credentials));
     let resolve!: (response: unknown) => void;
     transport.socket.emitWithAck.mockImplementation(() => new Promise(done => { resolve = done; }));
-    const onConnection = vi.fn(), onStatus = vi.fn();
-    createRealtimeClient(onConnection, undefined, { onStatus });
+    const onConnection = vi.fn(), onStatus = vi.fn(), onSessionRestored = vi.fn();
+    createRealtimeClient(onConnection, undefined, { onStatus, onSessionRestored });
     connect();
     expect(onStatus).toHaveBeenLastCalledWith('restoring');
     expect(onConnection).toHaveBeenLastCalledWith(false);
@@ -41,6 +41,7 @@ describe('realtime client', () => {
     resolve({ ok: true, requestId: request.requestId });
     await vi.waitFor(() => expect(onStatus).toHaveBeenLastCalledWith('ready'));
     expect(onConnection).toHaveBeenLastCalledWith(true);
+    expect(onSessionRestored).toHaveBeenCalledOnce();
   });
   it('clears expired credentials and notifies the interface after a failed resume', async () => {
     storage.set('party-games.session', JSON.stringify({ roomId: randomUUID(), sessionId: randomUUID(), token: 'a'.repeat(64) }));
@@ -60,6 +61,15 @@ describe('realtime client', () => {
     connect();
     expect(transport.socket.emitWithAck).not.toHaveBeenCalled();
     expect(onConnection).toHaveBeenLastCalledWith(true);
+  });
+  it('reports a server-disconnected connection without discarding the resumable identity', () => {
+    storage.set('party-games.session', JSON.stringify({ roomId: randomUUID(), sessionId: randomUUID(), token: 'a'.repeat(64) }));
+    const onStatus = vi.fn(), onError = vi.fn();
+    createRealtimeClient(() => {}, undefined, { onStatus, onError });
+    emit('disconnect', 'io server disconnect');
+    expect(onStatus).toHaveBeenLastCalledWith('error');
+    expect(onError).toHaveBeenCalledWith(expect.stringContaining('Une autre connexion'));
+    expect(storage.has('party-games.session')).toBe(true);
   });
   it('rejects malformed snapshots instead of presenting them as a room', () => {
     const onSnapshot = vi.fn(), onStatus = vi.fn();
