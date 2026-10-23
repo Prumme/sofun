@@ -46,7 +46,7 @@ export function PlayerJoinPage() {
       } else if (!pending.current) {
         setSnapshot(view);
       }
-    }, { onStatus: setStatus, onError: setError, onSessionLost: () => { latestSnapshot.current = null; setSnapshot(null); lastRequest.current = null; } });
+    }, { onStatus: setStatus, onError: setError, onSessionRestored: () => setError(null), onSessionLost: () => { latestSnapshot.current = null; setSnapshot(null); lastRequest.current = null; } });
     client.current = connection;
     connection.connect();
     return () => { mounted.current = false; connection.disconnect(); client.current = null; };

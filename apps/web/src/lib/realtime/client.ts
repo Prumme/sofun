@@ -8,6 +8,7 @@ export type ConnectionStatus = 'connecting' | 'restoring' | 'ready' | 'offline' 
 interface ClientOptions {
   resumeSession?: boolean;
   onSessionLost?: () => void;
+  onSessionRestored?: () => void;
   onStatus?: (status: ConnectionStatus) => void;
   onError?: (message: string) => void;
 }
@@ -56,6 +57,7 @@ export function createRealtimeClient(
         }
         return;
       }
+      options.onSessionRestored?.();
       status('ready');
     }).catch(() => {
       if (!socket.connected || currentGeneration !== generation) return;
@@ -63,7 +65,13 @@ export function createRealtimeClient(
       status('error');
     });
   });
-  socket.on('disconnect', () => { generation++; status('offline'); });
+  socket.on('disconnect', (reason: string) => {
+    generation++;
+    if (reason === 'io server disconnect') {
+      options.onError?.('Connexion fermée par le serveur. Une autre connexion peut avoir repris votre session. Réessayez la connexion pour la retrouver.');
+      status('error');
+    } else status('offline');
+  });
   socket.on('connect_error', () => status('offline'));
   socket.on('room:snapshot', (input: unknown) => {
     const result = snapshotSchema.safeParse(input);

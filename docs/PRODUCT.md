@@ -84,3 +84,9 @@ Le classement reste affiché jusqu’à ce que l’hôte choisisse « Retour au 
 Chaque question accorde vingt secondes selon l’horloge du serveur. Les écrans affichent un compte à rebours indicatif. La solution apparaît automatiquement quand tous les participants fixés au lancement ont répondu ou lorsque le délai expire. Une réponse reçue trop tard est refusée ; une absence vaut zéro point, sans bonus de vitesse. Une déconnexion ne suspend pas le délai.
 
 L’hôte peut toujours écourter une question avec « Révéler la réponse ». Après révélation, il garde la main sur le passage à la suivante et sur l’affichage du classement final. Les résultats restent visibles sans limite de vingt secondes.
+
+## Reprise pendant la partie — R7
+
+Un joueur qui recharge ou retrouve le réseau revient sur la question actuelle avec sa réponse déjà enregistrée et ses points conservés. Si la question a changé pendant son absence, il voit la nouvelle question ; sa réponse précédente ne vaut pas pour celle-ci. Le temps continue pendant une interruption de l’hôte ; son retour retrouve l’état réel, y compris une révélation déjà survenue.
+
+Une seule connexion peut contrôler une session. Une reprise sur une autre connexion désactive l’écran précédent, qui affiche un message et permet une reprise explicite. Cela ne crée pas de nouveau joueur. Les requêtes encore en attente d’une ancienne question ne bloquent pas la suivante. Les limites de reprise dans le même onglet et de stockage en mémoire restent inchangées.

@@ -42,7 +42,7 @@ export function HostRoomPage() {
       } else if (!pending.current) {
         setSnapshot(view);
       }
-    }, { onStatus: setStatus, onError: setError, onSessionLost: () => { latestSnapshot.current = null; setSnapshot(null); requestId.current = null; } });
+    }, { onStatus: setStatus, onError: setError, onSessionRestored: () => setError(null), onSessionLost: () => { latestSnapshot.current = null; setSnapshot(null); requestId.current = null; } });
     client.current = connection;
     connection.connect();
     return () => {
