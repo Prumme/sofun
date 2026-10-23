@@ -1,11 +1,11 @@
 import { roomCodeSchema } from '@party/contracts';
 
-export function buildInviteUrl(origin: string, code: string): string | null {
+export function buildInviteUrl(origin: string, code = ''): string | null {
   const base = new URL(origin);
   const host = base.hostname.toLowerCase().replace(/\.$/, '');
   if (!['http:', 'https:'].includes(base.protocol) || host === 'localhost' || host.endsWith('.localhost') || host.startsWith('127.') || ['[::1]', '[::]', '0.0.0.0'].includes(host)) return null;
   const url = new URL('/join', base.origin);
-  url.searchParams.set('code', roomCodeSchema.parse(code));
+  if (code) url.searchParams.set('code', roomCodeSchema.parse(code));
   return url.href;
 }
 export function readInviteCode(search: string): { code: string; invalid: boolean } {

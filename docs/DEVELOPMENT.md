@@ -164,3 +164,7 @@ Après compilation : `pnpm exec playwright test room-invite`. Pour la vérificat
 ### Recette locale complète (R9)
 
 Suivre [RECETTE.md](RECETTE.md) pour le parcours TV/deux smartphones sans WAN, les interruptions, la seconde partie et le relevé des anomalies. La recette physique est reportée par le propriétaire ; elle reste nécessaire avant de clôturer R9. Le scénario `quiz-complete` joue désormais ses deux parties avec les requêtes HTTP externes bloquées dans chaque contexte et vérifie l’absence de requêtes ou WebSockets externes. Ce contrôle automatisé ne prouve pas le fonctionnement du réseau et des appareils physiques.
+
+### QR depuis la page joueur
+
+La page `/join` affiche aussi un QR et un lien pour ouvrir le formulaire sur un téléphone du même Wi-Fi, sans saisir l’adresse IP. Sans code valide, ils pointent vers `/join` ; dès que les six caractères saisis forment un code valide, ils pointent vers `/join?code=CODE`. Un code partiel ou invalide revient au lien sans code. Le pseudo n’est jamais partagé, et aucune admission n’est automatique. Si cet onglet possède déjà une session hôte, la page propose le QR de sa room. L’origine LAN et le port sont conservés ; le repli explicatif sur localhost reste identique au lobby hôte. Le test `room-invite` décode les deux formes et fait rejoindre deux contextes indépendants.

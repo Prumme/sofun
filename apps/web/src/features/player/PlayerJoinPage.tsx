@@ -10,6 +10,7 @@ import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
 import { QuizPanel } from '@/features/quiz/QuizPanel';
 import { readInviteCode } from '@/features/rooms/invite';
+import { RoomInvite } from '@/features/rooms/RoomInvite';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
@@ -102,6 +103,7 @@ export function PlayerJoinPage() {
   const ready = status === 'ready';
   const unavailable = status === 'offline' || status === 'error';
   const room = snapshot?.viewer.role === 'player' ? snapshot : null;
+  const shareCode = readInviteCode(`?code=${encodeURIComponent(code)}`).code;
   const self = room?.players.find(player => player.id === room.viewer.sessionId);
 
   return <div className="host-page player-page">
@@ -110,7 +112,7 @@ export function PlayerJoinPage() {
       <a href="/" className="brand" aria-label="Party Games, accueil"><span className="brand-mark"><Gamepad2 size={22} aria-hidden="true" /></span>party<span className="brand-light">games</span><span className="brand-dot">.</span></a>
       <span className="player-mode"><Smartphone size={16} aria-hidden="true" /> Joueur</span>
     </div></header>
-    <main id="player-main" className="container player-main">
+    <main id="player-main" className={`container player-main${!snapshot ? ' player-main--admission' : ''}`}>
       <div className={`host-connection ${ready ? 'success-text' : 'muted'}`} role="status">
         {ready ? <Wifi size={16} aria-hidden="true" /> : unavailable ? <WifiOff size={16} aria-hidden="true" /> : <LoaderCircle size={16} className="spin" aria-hidden="true" />}
         <span data-testid="connection-status">{statusLabels[status]}</span>
@@ -131,11 +133,13 @@ export function PlayerJoinPage() {
       </section> : snapshot ? <section className="player-join">
         <h1>Cet onglet est <span>l’hôte.</span></h1>
         <p className="player-intro">Utilisez votre téléphone pour rejoindre comme joueur.</p>
+        <RoomInvite code={snapshot.code} />
         <Button asChild><a href="/">Retrouver l’écran hôte</a></Button>
       </section> : <section className="player-join" aria-labelledby="join-title">
         <div className="eyebrow"><span className="line" /> À VOUS DE JOUER</div>
         <h1 id="join-title">Rejoignez <span>la soirée.</span></h1>
         <p className="player-intro">Le code est sur l’écran partagé.<br />Il ne manque plus que votre pseudo.</p>
+        <div className="player-join-options">
         <Card className="player-form-card"><form noValidate onSubmit={event => { event.preventDefault(); void joinRoom(); }} aria-busy={joining}>
           <label htmlFor="room-code">Code de la room</label>
           <Input id="room-code" className="join-code-input" value={code} maxLength={6} placeholder="ABC234" autoComplete="off" autoCapitalize="characters" autoCorrect="off" spellCheck={false} disabled={joining} onChange={event => { setCode(event.target.value.toUpperCase()); setFields(previous => previous.name ? { name: previous.name } : {}); setError(null); }} aria-invalid={Boolean(fields.code)} aria-describedby={fields.code ? 'code-error' : 'code-help'} />
@@ -145,6 +149,8 @@ export function PlayerJoinPage() {
           {fields.name && <p id="name-error" className="join-field-error" role="alert">{fields.name}</p>}
           <Button type="submit" className="player-submit" disabled={!ready || joining} aria-busy={joining}>{joining ? <LoaderCircle size={18} className="spin" aria-hidden="true" /> : <ArrowRight size={18} aria-hidden="true" />}{joining ? 'Admission en cours…' : 'Rejoindre la room'}</Button>
         </form></Card>
+        <RoomInvite code={shareCode} />
+        </div>
       </section>}
     </main>
     <footer className="container host-footer"><span>Moins d’effets. Plus de moments.</span><span>Ensemble sur le même réseau</span></footer>

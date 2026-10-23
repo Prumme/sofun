@@ -200,3 +200,10 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 .host-admission .room-invite { margin: 0; gap: 20px; }
 .host-admission .host-join-instructions { margin: auto 0; }
 @media(max-width: 1000px) { .host-admission { grid-template-columns: 1fr; } .host-admission .host-code-card { padding: 28px; } .host-admission .room-invite { justify-content: center; } }
+
+@media(min-width: 900px) {
+  .player-main--admission { max-width: 1040px; }
+  .player-join-options { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 40px; }
+  .player-join-options .room-invite { flex-direction: column; gap: 16px; margin: 0; text-align: center; }
+  .player-join-options .room-invite-details { width: 100%; }
+}
