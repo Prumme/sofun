@@ -127,4 +127,14 @@ Le quiz comporte cinq questions embarquées côté serveur, aux identifiants dis
 
 La suite Playwright automatise deux parties complètes avec quatre contextes indépendants, des scores différents, des absences de réponse, des égalités et un rechargement du classement. Les tests serveur vérifient aussi les actions périmées, les phases autorisées et le nettoyage des départs au retour au lobby. Aucun changement architectural, nouvelle dépendance, chronomètre ou révélation automatique.
 
-Prochaine étape : R6, temps autoritaire et révélation automatique à l’échéance ou après toutes les réponses. Les objectifs et dépendances de R6 à R9 restent inchangés ; la recette matérielle reste R9.
+R6 ajoute désormais le temps autoritaire et la révélation automatique à l’échéance ou après toutes les réponses. Les objectifs et dépendances de R6 à R9 restent inchangés ; la recette matérielle reste R9.
+
+## Livraison R6
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (31 tests Vitest, lint, typage strict et builds), puis `pnpm test:e2e` réussi (50 tests bureau/mobile). Le scénario d’échéance réelle a aussi réussi séparément sur les deux projets après correction de son initialisation d’horloge. Les captures du compteur hôte et de la révélation mobile ont été inspectées. La recette physique reste R9.
+
+Le serveur attribue vingt secondes à chaque question et refuse toute réponse traitée à l’échéance ou après, indépendamment du déclenchement du callback. La dernière réponse attendue ou l’échéance révèle automatiquement et calcule les points une seule fois. L’hôte conserve la révélation anticipée et le passage à la suivante. Les anciennes minuteries sont annulées ; chaque nouvelle question reçoit une nouvelle échéance.
+
+Les écrans affichent un compte à rebours indicatif, sans envoyer d’heure client ni déclencher eux-mêmes une révélation. Une horloge locale décalée affecte uniquement ce chiffre ; le serveur garde l’autorité. Les tests couvrent l’horloge contrôlée, le callback retardé, la vraie échéance sur trois écrans et une partie complète aux révélations automatiques. Aucun changement de moteur, SDK, transport, dépendances ou configuration d’exécution.
+
+Prochaine étape : R7, fiabiliser les interruptions pendant le quiz. Les objectifs et dépendances de R7 à R9 restent inchangés ; la recette matérielle reste R9.

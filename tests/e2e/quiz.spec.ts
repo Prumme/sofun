@@ -3,7 +3,7 @@ import { closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms
 
 const prompt = 'Quelle est la plus grande planète du système solaire ?';
 
-test('host launches a quiz, two participants answer concurrently and host reveals the scores', async ({ createActors }, testInfo) => {
+test('host launches a quiz, two participants answer concurrently and scores are revealed automatically', async ({ createActors }, testInfo) => {
   const { host, players } = await createActors(2);
   const alice = players[0]!.page, bob = players[1]!.page;
   const code = await createRoom(host.page);
@@ -26,18 +26,8 @@ test('host launches a quiz, two participants answer concurrently and host reveal
     alice.getByRole('button', { name: 'B Jupiter', exact: true }).evaluate((button: HTMLButtonElement) => { button.click(); button.click(); }),
     bob.getByRole('button', { name: 'C Mars', exact: true }).click(),
   ]);
-  for (const page of [alice, bob]) {
-    await expect(page.getByText('Réponse enregistrée. Attendez la révélation de l’hôte.')).toBeVisible();
-    for (const button of await page.locator('.quiz-choices button').all()) await expect(button).toBeDisabled();
-    await expect(page.locator('.quiz-choices button[aria-pressed=true]')).toHaveCount(1);
-    await expect(page.getByRole('alert')).toHaveCount(0);
-  }
-  await expect(alice.getByRole('button', { name: 'B Jupiter', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(bob.getByRole('button', { name: 'C Mars', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(host.page.getByText('2 / 2 réponses reçues', { exact: true })).toBeVisible();
-  await expect(host.page.getByText('Bonne réponse', { exact: true })).toHaveCount(0);
-  await expect(host.page.getByRole('list', { name: 'Résultats de la question' })).toHaveCount(0);
-  await host.page.getByRole('button', { name: 'Révéler la réponse', exact: true }).click();
+  await expect(host.page.getByRole('button', { name: 'Révéler la réponse', exact: true })).toHaveCount(0);
   for (const page of [host.page, alice, bob]) {
     await expect(page.getByText('Bonne réponse', { exact: true })).toBeVisible();
     const results = page.getByRole('list', { name: 'Résultats de la question' });

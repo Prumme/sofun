@@ -7,7 +7,7 @@ export const quizActionSchema = z.discriminatedUnion('type', [
 ]);
 const participantSchema = z.object({ id: z.string().uuid(), name: z.string(), answered: z.boolean() }).strict();
 const questionFields = {
-  questionId: z.string().min(1), questionNumber: z.number().int().min(1).max(5), totalQuestions: z.literal(5),
+  deadline: z.number().int().nonnegative(), questionId: z.string().min(1), questionNumber: z.number().int().min(1).max(5), totalQuestions: z.literal(5),
   prompt: z.string().min(1), choices: z.tuple([z.string(), z.string(), z.string(), z.string()]),
   participants: z.array(participantSchema), ownAnswer: z.number().int().min(0).max(3).nullable(),
 };

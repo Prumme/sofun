@@ -20,13 +20,15 @@ test('plays five questions, keeps final ties, returns to the same lobby and repl
         await expect(actor.page.getByText('Bonne réponse', { exact: true })).toHaveCount(0);
         await expect(actor.page.getByRole('list', { name: 'Résultats de la question' })).toHaveCount(0);
       }
-      // First game: Alice and Benoît score four; second: only Benoît answers, scoring five.
-      const respondents = game === 0 && index < 4 ? [players[0]!, players[1]!] : game === 1 ? [players[1]!] : [];
-      await Promise.all(respondents.map(player => player.page.getByRole('button', { name: choice, exact: true }).click()));
-      for (const player of respondents) await expect(player.page.getByText('Réponse enregistrée. Attendez la révélation de l’hôte.')).toBeVisible();
-      await expect(host.page.getByText(`${respondents.length} / 3 réponses reçues`, { exact: true })).toBeVisible();
+      // First game uses early manual reveal; the second reveals all five questions on the last answer.
+      const respondents = game === 0 && index < 4 ? [players[0]!, players[1]!] : game === 1 ? players : [];
       await expect(host.page.getByRole('button', { name: 'Question suivante', exact: true })).toHaveCount(0);
-      await host.page.getByRole('button', { name: 'Révéler la réponse', exact: true }).click();
+      await Promise.all(respondents.map(player => game === 1 && player !== players[1]
+        ? player.page.locator('.quiz-choices button').nth(([1, 2, 0, 3, 1][index]! + 1) % 4).click()
+        : player.page.getByRole('button', { name: choice, exact: true }).click()));
+      if (game === 0) for (const player of respondents) await expect(player.page.getByText('Réponse enregistrée. En attente de la révélation.')).toBeVisible();
+      await expect(host.page.getByText(`${respondents.length} / 3 réponses reçues`, { exact: true })).toBeVisible();
+      if (game === 0) await host.page.getByRole('button', { name: 'Révéler la réponse', exact: true }).click();
       for (const actor of actors) {
         const results = actor.page.getByRole('list', { name: 'Résultats de la question' });
         await expect(results.getByRole('listitem')).toHaveCount(3);
