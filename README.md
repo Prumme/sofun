@@ -4,7 +4,7 @@ Projet de plateforme de jeux de soirée : un hôte lance des jeux sur un écran 
 
 ## État du projet
 
-Le dépôt contient le socle technique, l’infrastructure E2E multijoueur et les premiers parcours hôte/joueur. Depuis l’accueil, l’hôte crée une room ; les participants choisissent « Rejoindre une room » et saisissent son code et leur pseudo. L’hôte et les joueurs voient la même liste actualisée en direct. L’atelier reste disponible sur `/design`. Les contrôles de départ/fermeture et les jeux restent à développer.
+Le dépôt contient le socle technique, l’infrastructure E2E multijoueur et les premiers parcours hôte/joueur. Depuis l’accueil, l’hôte crée une room ; les participants choisissent « Rejoindre une room » et saisissent son code et leur pseudo. L’hôte et les joueurs voient la même liste actualisée en direct. L’atelier reste disponible sur `/design`. Le rechargement reprend la session dans le même onglet ; les joueurs peuvent quitter la room et l’hôte peut la fermer pour tous. Les jeux restent à développer.
 
 ## Documentation
 

@@ -25,3 +25,9 @@ export async function expectPlayers(page: Page, names: string[]) {
   await expect(list.getByTestId('player-name')).toHaveCount(names.length);
   expect((await list.getByTestId('player-name').allTextContents()).sort()).toEqual([...names].sort());
 }
+
+export async function closeRoom(page: Page) {
+  await page.getByRole('button', { name: 'Fermer la room', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmer la fermeture' }).click();
+  await expect(page.getByRole('button', { name: 'Créer une room', exact: true })).toBeEnabled();
+}

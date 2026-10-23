@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
 type Client = ReturnType<typeof createRealtimeClient>;
@@ -37,12 +38,14 @@ export function PlayerJoinPage() {
     const connection = createRealtimeClient(() => {}, view => {
       latestSnapshot.current = view;
       if (view.phase === 'closed') {
+        latestSnapshot.current = null;
+        lastRequest.current = null;
         setSnapshot(null);
         setError('Cette room a été fermée.');
       } else if (!pending.current) {
         setSnapshot(view);
       }
-    }, { onStatus: setStatus, onError: setError });
+    }, { onStatus: setStatus, onError: setError, onSessionLost: () => { latestSnapshot.current = null; setSnapshot(null); lastRequest.current = null; } });
     client.current = connection;
     connection.connect();
     return () => { mounted.current = false; connection.disconnect(); client.current = null; };
@@ -117,6 +120,7 @@ export function PlayerJoinPage() {
         <p className="player-intro">La suite se passe aussi sur l’écran partagé.</p>
         <Card className="player-room-card"><span>Code de la room</span><output data-testid="room-code">{room.code}</output></Card>
         <PlayersList players={room.players} viewerId={room.viewer.sessionId} />
+        <RoomExit key={room.roomId} role="player" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); lastRequest.current = null; setCode(''); setName(''); }} />
         <p className="player-wait-note">Installez-vous, la room est prête. Les jeux arrivent prochainement.</p>
       </section> : snapshot ? <section className="player-join">
         <h1>Cet onglet est <span>l’hôte.</span></h1>

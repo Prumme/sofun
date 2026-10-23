@@ -112,3 +112,11 @@ Un test de transport retient momentanément la vraie commande Socket.IO pour vé
 Les helpers `tests/e2e/fixtures/rooms.ts` pilotent les vraies interfaces : `createRoom(page)` récupère le code affiché, `joinRoom(page, code, name)` remplit et soumet le formulaire, `expectPlayers(page, names)` vérifie la liste visible. Ils s’utilisent avec les contextes indépendants de `createActors`. Chaque scénario crée ses propres rooms, sans code réel de développement ni credentials préchargés.
 
 Les tests R2 couvrent deux admissions simultanées, la même liste sur les écrans hôte et joueurs, le repère « Vous », la normalisation du code et du pseudo, les champs invalides, une room absente, la correction des erreurs, la protection contre le double clic et l’isolation de deux rooms. Les captures montrent le formulaire mobile, le lobby joueur et la liste hôte. Aucune réponse serveur de succès n’est simulée. Les parcours complets de reprise et de fermeture restent aux tests R3 à venir.
+
+### Cycle de vie du lobby (R3)
+
+Dans le même onglet, recharger l’écran hôte ou joueur reprend la session. Le joueur peut quitter depuis son lobby ; l’hôte peut fermer après confirmation. Déconnexion et départ volontaire sont distincts : seule la seconde action retire le joueur du lobby. Un redémarrage serveur ou des identifiants refusés rendent la création ou l’admission accessibles avec un message explicite.
+
+`tests/e2e/room-lifecycle.spec.ts` utilise des contextes indépendants pour vérifier identités conservées après rechargement, retour réseau sans doublon, départ/réadmission, annulation puis fermeture collective, session périmée hors ligne et secret invalide. Le scénario d’accusé de départ perdu transmet la vraie commande au serveur et retient uniquement sa confirmation ; le joueur vérifie ensuite sa session via l’interface. Aucun succès serveur n’est fabriqué. Les rooms sont fermées par l’hôte à la fin lorsque la session hôte reste disponible ; les rooms devenues inaccessibles disparaissent avec le processus de test.
+
+Commande ciblée après compilation : `pnpm exec playwright test room-lifecycle`. La reprise pendant un quiz sera couverte en R7.

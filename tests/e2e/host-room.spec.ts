@@ -1,4 +1,5 @@
 import type { Page, WebSocketRoute } from '@playwright/test';
+import { closeRoom } from './fixtures/rooms.js';
 import { test, expect } from './fixtures/actors.js';
 
 // Gate the real request, not a mocked server response, to observe loading and double clicks.
@@ -56,6 +57,7 @@ test('creates a real room once and displays its server code in an empty lobby', 
   await expect(page.getByRole('button', { name: 'Créer une room' })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('host-lobby.png'), fullPage: true });
+  await closeRoom(page);
 });
 
 test('shows an actionable error when connection is lost during creation', async ({ page }) => {
@@ -85,6 +87,8 @@ test('creates independent rooms in separate host contexts', async ({ createActor
   }
   expect(codes[0]).not.toBe(codes[1]);
   await expect(first.host.page.getByTestId('room-code')).toHaveText(codes[0]!);
+  await closeRoom(first.host.page);
+  await closeRoom(second.host.page);
 });
 
 test('disables creation while the server is unavailable and allows reconnecting', async ({ page }) => {

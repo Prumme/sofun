@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures/actors.js';
-import { createRoom, expectPlayers, joinRoom } from './fixtures/rooms.js';
+import { closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms.js';
 
 test('host and two concurrent participants see the same live roster', async ({ createActors }, testInfo) => {
   const { host, players } = await createActors(2);
@@ -14,6 +14,7 @@ test('host and two concurrent participants see the same live roster', async ({ c
   await expect(host.page.getByText('Vous', { exact: true })).toHaveCount(0);
   await host.page.screenshot({ path: testInfo.outputPath('host-with-players.png'), fullPage: true });
   await players[0]!.page.screenshot({ path: testInfo.outputPath('player-lobby.png'), fullPage: true });
+  await closeRoom(host.page);
 });
 
 test('validates fields before admission and allows correction without duplicate players', async ({ createActors }, testInfo) => {
@@ -44,6 +45,7 @@ test('validates fields before admission and allows correction without duplicate 
   await expectPlayers(player, ['Camille']);
   await expect(player.getByRole('heading', { level: 1 })).toHaveText('Bienvenue, Camille.');
   await expect(player.getByRole('button', { name: 'Rejoindre la room' })).toHaveCount(0);
+  await closeRoom(host.page);
 });
 
 test('explains an absent room and accepts a corrected real room code', async ({ createActors }) => {
@@ -62,6 +64,7 @@ test('explains an absent room and accepts a corrected real room code', async ({ 
   await player.getByRole('button', { name: 'Rejoindre la room', exact: true }).click();
   await expectPlayers(host.page, ['Camille']);
   await expectPlayers(player, ['Camille']);
+  await closeRoom(host.page);
 });
 
 test('keeps rosters isolated between two rooms and their participant contexts', async ({ createActors }) => {
@@ -74,4 +77,7 @@ test('keeps rosters isolated between two rooms and their participant contexts', 
   await joinRoom(second.players[0]!.page, secondCode, 'Benoît');
   for (const actor of [first.host, ...first.players]) await expectPlayers(actor.page, ['Alice']);
   for (const actor of [second.host, ...second.players]) await expectPlayers(actor.page, ['Benoît']);
+  await closeRoom(first.host.page);
+  await expectPlayers(second.host.page, ['Benoît']);
+  await closeRoom(second.host.page);
 });

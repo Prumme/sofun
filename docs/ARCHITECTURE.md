@@ -97,3 +97,11 @@ L’atelier n’effectue pas de reprise de session, afin de ne pas remplacer une
 L’admission attend une connexion prête, désactive le formulaire pendant la requête et utilise un verrou synchrone contre les doubles envois. Un nouvel essai explicite après une réponse non confirmée réutilise l’identifiant seulement si le code et le pseudo normalisés sont identiques. Le lobby joueur est affiché après confirmation et correspondance de l’instantané avec l’identité reçue. Aucun contrat, service serveur ni mécanisme d’authentification supplémentaire n’est ajouté.
 
 Le composant de liste est partagé par l’hôte et les joueurs ; seules les données autorisées des instantanés validés l’alimentent. Chaque joueur voit sa propre entrée marquée « Vous ». Les états de présence déjà fournis par le serveur sont affichés sans ajouter de contrôle de départ ou fermeture. Les liens d’admission préremplis et QR codes restent R8 ; le cycle de vie complet reste R3.
+
+## Cycle de vie du lobby — R3
+
+Les interfaces réutilisent `session:resume`, `room:leave` et `room:close`, sans changement du backend, du stockage ou des contrats. Le rechargement et la reconnexion reprennent l’identité dans le même onglet via `sessionStorage`. Une déconnexion conserve la place, signalée hors ligne ; un départ volontaire au lobby la supprime. L’hôte ferme la room après confirmation, ce qui informe tous les participants connectés.
+
+Les actions sont bloquées tant que la connexion n’est pas prête ou pendant leur envoi. Les credentials sont supprimés après confirmation du départ ou réception de la fermeture. Une reprise refusée pour session invalide ou room absente efface aussi la vue locale et rend le formulaire ou l’accueil accessible. Après un accusé de départ perdu, une action explicite permet de reconnecter et vérifier la session réelle ; aucune intention de départ ou fermeture n’est rejouée automatiquement. La création et l’admission peuvent ensuite recommencer avec un nouvel identifiant de requête.
+
+Les garanties de reprise restent limitées à l’onglet et à la durée de vie du serveur mémoire. Le cycle de vie pendant un quiz et ses interruptions reste aux étapes suivantes.

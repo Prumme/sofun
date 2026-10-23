@@ -62,3 +62,7 @@ La création de room côté hôte est autorisée après R0. L’accueil doit per
 ## Admission des joueurs — R2
 
 Le parcours joueur permet de rejoindre une room depuis le même réseau, avec le code affiché par l’hôte et un pseudo. Le formulaire signale un code invalide, un pseudo vide ou une room introuvable. Après admission, l’hôte et les joueurs voient la même liste mise à jour en direct ; le joueur identifie sa propre entrée. Les jeux, le QR code et les contrôles de départ/fermeture restent aux étapes prévues dans la roadmap.
+
+## Cycle de vie du lobby — R3
+
+Recharger le même onglet retrouve le rôle et le pseudo sans nouvelle admission. Une coupure réseau conserve la place, indiquée hors ligne aux autres participants. « Quitter la room » retire volontairement le joueur ; il peut rejoindre à nouveau comme nouvelle session. « Fermer la room », confirmé par l’hôte, met fin à la room pour tous et permet d’en créer une autre. Une session périmée est expliquée et ramène vers une action de création ou d’admission. La fermeture d’un onglet ne constitue pas un départ volontaire ; aucune garantie de reprise après fermeture d’onglet ou redémarrage serveur.
