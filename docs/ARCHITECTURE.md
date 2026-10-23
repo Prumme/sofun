@@ -69,7 +69,7 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R6 joue cinq questions avec temps autoritaire, révélation automatique, classement final et retour au lobby ; R7 couvre les interruptions ; catalogue métier et QR code restent à développer.
+- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R6 joue cinq questions avec temps autoritaire, révélation automatique, classement final et retour au lobby ; R7 couvre les interruptions ; R8 ajoute l’admission par lien/QR ; catalogue métier et recette physique restent à compléter.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
 - Public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
@@ -143,3 +143,11 @@ Les contrôles du quiz sont recréés lorsque changent la partie, la question, l
 Une déconnexion explicitement imposée par le serveur est signalée avec une action de reconnexion, en conservant l’identité locale. Elle peut résulter d’une reprise par une autre connexion. Après une reprise réussie, les messages de coupure précédents sont retirés de l’écran. Le transport Socket.IO ne reprend pas automatiquement une connexion déconnectée par le serveur : le contrôle reste à la connexion remplaçante jusqu’à une reprise explicite. Le message ne prétend pas connaître la cause exacte au-delà de cette fermeture serveur. Les secrets ne sont ni affichés ni placés dans l’URL.
 
 Les limites restent celles de la V1 : même onglet, serveur mémoire, aucune persistance après redémarrage, aucun transfert automatique d’hôte. Le compteur local reste indicatif ; l’échéance serveur ne se recalcule pas à la reprise.
+
+## Lien d’admission et QR code — R8
+
+Le lobby hôte construit `/join?code=CODE` depuis `window.location.origin`, en conservant schéma, hôte et port. Le seul paramètre partagé est le code public validé ; aucun identifiant interne, secret de session ou nom de joueur. Le formulaire normalise le code du lien, mais attend toujours la saisie du pseudo et une soumission explicite. Un code malformé, vide ou répété dans l’URL est signalé et reste corrigeable ; une room fermée est refusée par le service existant. La reprise de session existante garde priorité sur une nouvelle admission implicite.
+
+Sur `localhost`, une adresse de boucle locale ou une adresse générique d’écoute, le lobby conserve le code manuel et explique comment ouvrir l’adresse réseau de l’ordinateur. Aucun lien ou QR inutilisable sur les téléphones n’est proposé pour ces adresses. Aucune adresse LAN n’est devinée et aucun port n’est codé en dur : l’hôte doit ouvrir l’origine accessible aux participants. Un nom d’hôte doit également être résolvable sur leurs appareils.
+
+`qrcode.react` 4.2.0 encode localement le lien en SVG (correction M, marge de quatre modules), sans service externe ni autre dépendance de production que React déjà présent. Les couleurs noir/blanc de lecture sont centralisées dans les tokens. `jsqr` 1.4.0 est ajouté uniquement aux dépendances de développement pour décoder le rendu réel dans les tests. Backend, contrats réseau, stockage et moteur restent inchangés.

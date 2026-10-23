@@ -9,6 +9,7 @@ import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
 import { QuizPanel } from '@/features/quiz/QuizPanel';
+import { readInviteCode } from '@/features/rooms/invite';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
@@ -23,10 +24,11 @@ const statusLabels: Record<ConnectionStatus, string> = {
 export function PlayerJoinPage() {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [code, setCode] = useState('');
+  const [invitation] = useState(() => readInviteCode(window.location.search));
+  const [code, setCode] = useState(invitation.code);
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(invitation.invalid ? 'Le code du lien est invalide. Saisissez le code affiché par l’hôte.' : null);
   const [fields, setFields] = useState<FieldErrors>({});
   const client = useRef<Client | null>(null);
   const latestSnapshot = useRef<Snapshot | null>(null);

@@ -4,7 +4,7 @@ Projet de plateforme de jeux de soirée : un hôte lance des jeux sur un écran 
 
 ## État du projet
 
-Le dépôt contient le socle technique, l’infrastructure E2E multijoueur et les premiers parcours hôte/joueur. Depuis l’accueil, l’hôte crée une room ; les participants choisissent « Rejoindre une room » et saisissent son code et leur pseudo. L’hôte et les joueurs voient la même liste actualisée en direct. L’atelier reste disponible sur `/design`. Le rechargement reprend la session dans le même onglet ; les joueurs peuvent quitter la room et l’hôte peut la fermer pour tous. Le quiz propose cinq questions à deux joueurs minimum : chaque question dispose de vingt secondes, avec révélation automatique à l’échéance ou après toutes les réponses ; l’hôte fait avancer la partie, puis tous voient le classement final. Le retour au même lobby permet de rejouer avec des scores remis à zéro. L’hôte peut aussi écourter une question. La reprise pendant une partie retrouve la question, les réponses et les scores sans suspendre le temps. Une seule connexion contrôle chaque session ; une connexion remplacée peut être reprise explicitement.
+Le dépôt contient le socle technique, l’infrastructure E2E multijoueur et les premiers parcours hôte/joueur. Depuis l’accueil, l’hôte crée une room ; les participants scannent le QR code, ouvrent le lien d’admission ou choisissent « Rejoindre une room ». Ils confirment leur pseudo avant de rejoindre. L’hôte et les joueurs voient la même liste actualisée en direct. L’atelier reste disponible sur `/design`. Le rechargement reprend la session dans le même onglet ; les joueurs peuvent quitter la room et l’hôte peut la fermer pour tous. Le quiz propose cinq questions à deux joueurs minimum : chaque question dispose de vingt secondes, avec révélation automatique à l’échéance ou après toutes les réponses ; l’hôte fait avancer la partie, puis tous voient le classement final. Le retour au même lobby permet de rejouer avec des scores remis à zéro. L’hôte peut aussi écourter une question. La reprise pendant une partie retrouve la question, les réponses et les scores sans suspendre le temps. Une seule connexion contrôle chaque session ; une connexion remplacée peut être reprise explicitement.
 
 ## Documentation
 
@@ -26,7 +26,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Ouvrir l’URL LAN affichée pour accéder depuis un téléphone du même réseau ; `localhost` n’est pas l’adresse de l’ordinateur hôte sur les autres appareils.
+Ouvrir l’URL LAN affichée sur l’ordinateur hôte pour obtenir un lien et un QR code utilisables depuis les téléphones du même réseau ; `localhost` n’est pas l’adresse de l’ordinateur hôte sur les autres appareils.
 
 - `pnpm check` : lint, typage strict, tests et compilation.
 - `pnpm exec playwright install chromium` puis `pnpm test:e2e` : tests navigateur.
