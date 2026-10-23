@@ -9,7 +9,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-L’accueil `/` permet à l’hôte de créer une room sur le vrai serveur Socket.IO et d’afficher son code dans un lobby vide. Le bouton attend une connexion prête et reste désactivé pendant la création ; une requête non confirmée affiche une erreur et peut être réessayée explicitement. L’atelier du design system est conservé sur `/design` ; ses cartes ne lancent aucun jeu. L’admission des joueurs et le parcours complet de room ne sont pas encore livrés.
+L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », puis saisir le code et un pseudo. L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; les jeux et les contrôles de départ/fermeture ne sont pas encore livrés.
 
 ## Réseau local
 
@@ -103,6 +103,12 @@ La [roadmap](ROADMAP.md) décrit les étapes R0 à R9 et la stratégie d’isola
 
 ### Périmètre de la création de room (R1)
 
-Le lobby ne propose encore ni admission, ni lancement de jeu, ni fermeture manuelle. Le code affiché provient exclusivement de l’instantané validé du serveur et n’est présenté comme créé qu’après confirmation de l’accusé. Les credentials restent dans `sessionStorage`, sans apparaître dans l’URL ni dans le document. Le client distingue connexion, restauration et disponibilité avant d’autoriser la création ; l’atelier n’effectue pas de reprise de session hôte. La reprise technique déjà existante est conservée, mais les parcours complets de rechargement, départ et fermeture restent R3.
+La création R1 reste inchangée ; R2 complète le lobby avec l’admission et la liste des joueurs, sans lancement de jeu ni fermeture manuelle. Le code affiché provient exclusivement de l’instantané validé du serveur et n’est présenté comme créé qu’après confirmation de l’accusé. Les credentials restent dans `sessionStorage`, sans apparaître dans l’URL ni dans le document. Le client distingue connexion, restauration et disponibilité avant d’autoriser la création ; l’atelier n’effectue pas de reprise de session hôte. La reprise technique déjà existante est conservée, mais les parcours complets de rechargement, départ et fermeture restent R3.
 
 Un test de transport retient momentanément la vraie commande Socket.IO pour vérifier le bouton désactivé et empêcher deux créations. Il relaie ensuite la commande au vrai serveur et compare son code à l’interface ; un autre coupe la connexion avant l’envoi pour vérifier l’erreur. Aucune réponse de succès ni room n’est fabriquée. Les tests continuent d’attendre des événements ou états réels, sans `waitForTimeout`.
+
+### Admission multijoueur (R2)
+
+Les helpers `tests/e2e/fixtures/rooms.ts` pilotent les vraies interfaces : `createRoom(page)` récupère le code affiché, `joinRoom(page, code, name)` remplit et soumet le formulaire, `expectPlayers(page, names)` vérifie la liste visible. Ils s’utilisent avec les contextes indépendants de `createActors`. Chaque scénario crée ses propres rooms, sans code réel de développement ni credentials préchargés.
+
+Les tests R2 couvrent deux admissions simultanées, la même liste sur les écrans hôte et joueurs, le repère « Vous », la normalisation du code et du pseudo, les champs invalides, une room absente, la correction des erreurs, la protection contre le double clic et l’isolation de deux rooms. Les captures montrent le formulaire mobile, le lobby joueur et la liste hôte. Aucune réponse serveur de succès n’est simulée. Les parcours complets de reprise et de fermeture restent aux tests R3 à venir.

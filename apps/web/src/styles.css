@@ -118,3 +118,34 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 .host-footer { width: 100%; padding: 24px 40px; font-size: 11px; }
 @media(min-width:1600px) { .host-page h1 { font-size: 76px; }.host-room-code { font-size: 108px; }.host-intro { font-size: 22px; } }
 @media(max-width:600px) { .host-mode { display: none; }.host-connection { justify-content: flex-start; }.host-welcome { padding-top: 42px; }.host-intro { font-size: 16px; }.host-lobby { padding-top: 36px; }.host-code-card { padding: 22px 14px; }.host-code-caption { font-size: 11px; }.host-outline { margin-top: 40px; }.host-code-label { font-size: 11px; }.host-main { padding-bottom: 40px; }.host-footer { padding: 20px 24px; } }
+
+/* Player admission and room roster share the existing room and form tokens. */
+.host-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.host-join-instructions { color: var(--muted-foreground); margin: 0 auto 28px; max-width: 680px; font-size: 15px; }
+.host-join-instructions strong { color: var(--foreground); font-weight: 500; }
+.room-players { margin: 30px auto 0; max-width: 720px; }
+.room-players h2 { font-size: 22px; margin: 16px 0; }
+.players-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; text-align: left; }
+.players-list li { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); }
+.player-avatar { display: flex; color: var(--primary); }
+.player-identity { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.player-self { color: var(--muted-foreground); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; font-size: 10px; flex-shrink: 0; }
+.player-presence { font-size: 12px; white-space: nowrap; }
+.player-mode { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); font-size: 12px; }
+.player-main { width: 100%; max-width: 600px; flex: 1; padding-top: 26px; padding-bottom: 48px; }
+.player-main .host-connection { justify-content: flex-start; }
+.player-join,.player-lobby { margin-top: 44px; }
+.player-page h1 { font-size: clamp(32px, 5vw, 42px); line-height: 1.2; margin: 22px 0 16px; overflow-wrap: anywhere; }
+.player-intro { color: var(--muted-foreground); font-size: 15px; line-height: 1.8; margin: 0 0 28px; }
+.player-form-card { padding: 28px; }
+.player-form-card label { font-size: 13px; margin-bottom: 10px; }
+.player-form-card .input { font-size: 16px; min-height: 50px; }
+.player-form-card .join-code-input { letter-spacing: .15em; font-weight: 600; }
+.join-field-help,.join-field-error { font-size: 12px; margin: 8px 0 24px; }
+.join-field-help { color: var(--muted-foreground); }.join-field-error { color: var(--destructive); }
+.player-submit { width: 100%; min-height: 50px; font-size: 14px; margin-top: 28px; }
+.player-room-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; color: var(--muted-foreground); font-size: 13px; }
+.player-room-card output { color: var(--foreground); letter-spacing: .12em; font-size: 22px; font-weight: 600; }
+.player-lobby .room-players h2 { font-size: 20px; }
+.player-wait-note { color: var(--muted-foreground); font-size: 13px; margin-top: 28px; }
+@media(max-width:600px) { .host-actions .button { width: 100%; }.player-form-card { padding: 22px; }.players-list li { gap: 10px; padding: 15px 14px; }.player-identity { font-size: 14px; gap: 6px; }.player-presence { font-size: 11px; }.host-join-instructions { font-size: 13px; } }

@@ -69,7 +69,7 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Le lobby hôte de R1 permet la création et l’affichage du code. Aucun jeu de production, catalogue interactif métier, écran d’admission joueur ou QR code n’est encore disponible.
+- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Aucun jeu de production, catalogue interactif métier ou QR code n’est encore disponible.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
 - Premier jeu, public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
@@ -89,3 +89,11 @@ L’accueil React utilise `room:create` et les `room:snapshot` existants pour af
 Le client expose un statut de connexion distinguant transport, restauration et disponibilité de session. La création est bloquée tant que la session n’est pas prête, puis protégée par un verrou synchrone et un bouton désactivé. L’instantané reçu avant l’accusé est conservé jusqu’à confirmation de la création. Après un accusé non confirmé, un nouvel essai explicite réutilise l’UUID de requête pour profiter de la déduplication existante sur la même connexion. Aucun rejeu automatique de création n’est effectué à la reconnexion. Les réponses tardives d’une ancienne connexion sont ignorées ; les secrets de session restent dans le stockage de session du navigateur.
 
 L’atelier n’effectue pas de reprise de session, afin de ne pas remplacer une connexion hôte. L’admission des joueurs, les contrôles de départ/fermeture et les règles de jeu ne sont pas ajoutés par R1.
+
+## Admission et liste des joueurs — R2
+
+`/join` complète la sélection simple de pages React. Le formulaire utilise le schéma Zod `room:join` partagé : code de six caractères normalisé en majuscules et pseudo nettoyé de ses espaces extérieurs, entre 1 et 32 caractères. La validation côté serveur reste autoritaire ; une room absente est signalée sans créer de joueur. Les pseudos ne sont pas rendus uniques : les identifiants serveur existants distinguent les participants.
+
+L’admission attend une connexion prête, désactive le formulaire pendant la requête et utilise un verrou synchrone contre les doubles envois. Un nouvel essai explicite après une réponse non confirmée réutilise l’identifiant seulement si le code et le pseudo normalisés sont identiques. Le lobby joueur est affiché après confirmation et correspondance de l’instantané avec l’identité reçue. Aucun contrat, service serveur ni mécanisme d’authentification supplémentaire n’est ajouté.
+
+Le composant de liste est partagé par l’hôte et les joueurs ; seules les données autorisées des instantanés validés l’alimentent. Chaque joueur voit sa propre entrée marquée « Vous ». Les états de présence déjà fournis par le serveur sont affichés sans ajouter de contrôle de départ ou fermeture. Les liens d’admission préremplis et QR codes restent R8 ; le cycle de vie complet reste R3.
