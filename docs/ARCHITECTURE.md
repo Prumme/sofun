@@ -69,7 +69,7 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le premier quiz R4 joue une question avec révélation manuelle ; le catalogue métier et le QR code restent à développer.
+- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R5 joue cinq questions avec révélation manuelle, classement final et retour au lobby ; temps, catalogue métier et QR code restent à développer.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
 - Public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
@@ -117,3 +117,11 @@ Les participants sont figés au lancement à partir des identités du lobby (au 
 Le propriétaire a validé l’option explicite `GameDefinition.actionConcurrency: 'game-validated'`. Sans cette option, l’adaptateur conserve `strict-revision` : toute révision différente reste refusée. Pour un jeu optant pour la validation métier, la room accepte une révision ancienne, mais jamais une révision future ni un autre identifiant de partie. La file séquentielle par room et la déduplication restent inchangées.
 
 Le quiz utilise cette option : son validateur vérifie rôle, appartenance au groupe figé, identifiant de question, phase ouverte et absence de réponse antérieure. Deux joueurs répondant sur la même révision peuvent donc réussir ; une réponse ancienne ne peut pas changer un résultat révélé. Les futures questions R5 devront conserver des identifiants distincts. Aucun rejeu client automatique ni suppression globale du contrôle de révision n’est introduit. Cette solution ajoute une option ciblée au SDK ; demander un nouvel envoi utilisateur conserverait les refus de réponses concurrentes, et assouplir tous les jeux changerait leurs garanties.
+
+## Quiz complet — R5
+
+Le quiz étend son état privé avec l’index de question et les scores cumulés. Les cinq questions françaises et leurs solutions restent dans le module serveur. Les scores sont crédités une seule fois à la transition `question` → `revealed` ; une nouvelle révélation est refusée. Les réponses sont réinitialisées au passage à la question suivante. Les vues de question ne publient ni solution, ni scores, ni autres réponses ; les vues de révélation ajoutent le total cumulé.
+
+L’intention hôte `next`, associée à l’identifiant de question, n’est autorisée qu’après révélation. Après la cinquième, elle expose la phase `results` sans `finished`. Le classement reste ainsi présent dans l’état serveur, y compris après rechargement. L’intention hôte `return-lobby`, autorisée uniquement depuis ces résultats, utilise le `finished` existant ; rooms, code et sessions restent en place et les départs volontaires sont nettoyés par le mécanisme existant. Un nouveau lancement crée un nouvel identifiant de partie et des scores nuls.
+
+Convention d’affichage utilisée pour les égalités : rang de compétition partagé (1, 1, 3), ordre d’entrée au lobby conservé à score égal, aucun départage. Cette convention concrétise le classement stable demandé sans changer le barème. Les actions retardées sont contrôlées par l’identifiant de partie, l’identifiant distinct de question et la phase ; le mode de concurrence validé en R4 est conservé. Aucun changement du SDK, du moteur ou du transport n’est nécessaire. Chronomètre et révélation automatique restent R6.

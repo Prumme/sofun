@@ -41,7 +41,7 @@ test('host launches a quiz, two participants answer concurrently and host reveal
   for (const page of [host.page, alice, bob]) {
     await expect(page.getByText('Bonne réponse', { exact: true })).toBeVisible();
     const results = page.getByRole('list', { name: 'Résultats de la question' });
-    await expect(results.getByRole('listitem')).toHaveText(['AliceJupiter1 point', 'BenoîtMars0 point']);
+    await expect(results.getByRole('listitem')).toHaveText(['AliceJupiter1 pointTotal : 1', 'BenoîtMars0 pointTotal : 0']);
     await expect(page.locator('.quiz-choices button')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
@@ -61,7 +61,7 @@ test('manual reveal does not require every answer and missing answers receive ze
   await expect(host.page.getByText('1 / 2 réponses reçues', { exact: true })).toBeVisible();
   await host.page.getByRole('button', { name: 'Révéler la réponse', exact: true }).click();
   for (const page of [host.page, ...players.map(player => player.page)]) {
-    await expect(page.getByRole('list', { name: 'Résultats de la question' }).getByRole('listitem')).toHaveText(['AliceJupiter1 point', 'BenoîtSans réponse0 point']);
+    await expect(page.getByRole('list', { name: 'Résultats de la question' }).getByRole('listitem')).toHaveText(['AliceJupiter1 pointTotal : 1', 'BenoîtSans réponse0 pointTotal : 0']);
   }
   await expect(players[1]!.page.getByRole('button', { name: 'B Jupiter', exact: true })).toHaveCount(0);
   await closeRoom(host.page);

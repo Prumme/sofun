@@ -26,6 +26,6 @@
 
 Le socle technique a été autorisé le 22 octobre 2026 : monorepo TypeScript strict, React/Vite, Tailwind/shadcn, NestJS, Socket.IO, Zod, pnpm, Vitest et Playwright. Consulter [l’architecture validée](docs/ARCHITECTURE.md) et [le guide de développement](docs/DEVELOPMENT.md).
 
-Le socle, l’atelier, l’infrastructure E2E R0, la création de room hôte R1, l’admission des joueurs R2 et le cycle de vie du lobby R3 sont implémentés. R4 livre une première question de quiz avec révélation manuelle. L’enchaînement, le classement final et le temps suivent R5/R6. Ne pas étendre ce périmètre sans demande. Préserver les frontières entre contrats publics, SDK interne et état serveur privé.
+Le socle, l’atelier, l’infrastructure E2E R0, la création de room hôte R1, l’admission des joueurs R2 et le cycle de vie du lobby R3 sont implémentés. R4/R5 livrent un quiz de cinq questions avec révélation manuelle, classement final et retour au lobby pour rejouer. Le temps autoritaire reste R6 et la résilience en partie R7. Ne pas étendre ce périmètre sans demande. Préserver les frontières entre contrats publics, SDK interne et état serveur privé.
 
 Exécuter `pnpm check` ; ajouter `pnpm test:e2e` pour les changements d’interface ou de transport. Les branches des agents utilisent `codex/`.

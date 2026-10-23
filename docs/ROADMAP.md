@@ -117,4 +117,14 @@ L’hôte lance le quiz avec au moins deux participants figés au lancement. Cha
 
 L’ajustement de concurrence du SDK a été explicitement validé : seul le quiz opte pour une validation métier de la question/phase/acteur/doublon à la place de l’égalité stricte de révision. Les autres jeux conservent leur garantie antérieure ; partie incorrecte et révision future restent rejetées pour tous. Les tests couvrent notamment deux réponses sur la même révision.
 
-La prochaine tâche est R5 : enchaîner les cinq questions, afficher le classement final, revenir au lobby et rejouer. Les objectifs et dépendances de R5 à R9 restent inchangés. Aucun chronomètre ni révélation automatique n’est ajouté par R4.
+R5 complète désormais les cinq questions, le classement final, le retour au lobby et la possibilité de rejouer. Les objectifs et dépendances de R5 à R9 restent inchangés. Aucun chronomètre ni révélation automatique n’est ajouté par R4.
+
+## Livraison R5
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (26 tests Vitest, lint, typage strict et builds), `pnpm test:e2e` réussi (48 tests bureau/mobile). Le nouveau scénario joue deux parties complètes par projet avec quatre contextes indépendants. Les captures du classement hôte/mobile ont été inspectées. La recette physique reste R9.
+
+Le quiz comporte cinq questions embarquées côté serveur, aux identifiants distincts. L’hôte révèle puis avance manuellement ; les points sont cumulés une seule fois par question. Le classement final conserve les ex æquo avec rang partagé et ordre stable du lobby. Il reste affiché jusqu’au retour au lobby demandé par l’hôte. La room, son code et les identités restantes sont conservés ; un nouveau lancement crée une nouvelle partie aux scores nuls.
+
+La suite Playwright automatise deux parties complètes avec quatre contextes indépendants, des scores différents, des absences de réponse, des égalités et un rechargement du classement. Les tests serveur vérifient aussi les actions périmées, les phases autorisées et le nettoyage des départs au retour au lobby. Aucun changement architectural, nouvelle dépendance, chronomètre ou révélation automatique.
+
+Prochaine étape : R6, temps autoritaire et révélation automatique à l’échéance ou après toutes les réponses. Les objectifs et dépendances de R6 à R9 restent inchangés ; la recette matérielle reste R9.

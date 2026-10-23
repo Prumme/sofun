@@ -13,3 +13,5 @@ L’écran partagé agit comme hôte, y compris pour les jeux sans téléphone. 
 Les événements internes du moteur ne constituent pas un bus public. Ajouter un nouvel effet (audio serveur, I/O, etc.) exige de définir sa responsabilité et son comportement en cas d’échec avant de modifier le SDK.
 
 Le module `apps/server/src/games/quiz/quiz.ts` est le premier exemple de production. Il n’active pas `finished` à la révélation afin de garder les résultats visibles. Le contrôle de révision reste strict par défaut : n’activer `actionConcurrency: 'game-validated'` qu’avec une validation métier des intentions périmées (question/phase, acteur, doublon) et ses tests, comme le quiz R4. Le simple assouplissement d’une révision sans garde métier est insuffisant.
+
+Pour une phase finale persistante, suivre le quiz R5 : exposer `results` sans `finished`, puis retourner `finished: true` seulement sur l’action hôte de retour au lobby. Le nettoyage de la partie et des départs est assuré par les rooms existantes. Les intentions de progression doivent viser une question/phase précise pour qu’un double envoi ne saute pas d’étape.

@@ -12,7 +12,11 @@ let views: Map<string, Snapshot>;
 function command(actor: string, name: CommandName, data: Record<string, unknown> = {}, requestId = randomUUID()) {
   return rooms.command(actor, name, { requestId, ...data });
 }
-function view(actor: string) { return quizViewSchema.parse(views.get(actor)!.game!.view); }
+function view(actor: string) {
+  const projected = quizViewSchema.parse(views.get(actor)!.game!.view);
+  if (projected.phase === 'results') throw new Error('Expected a question view');
+  return projected;
+}
 function action(actor: string, value: unknown, snapshot = views.get(actor)!, requestId = randomUUID()) {
   return command(actor, 'game:action', { gameId: snapshot.game!.id, revision: snapshot.revision, action: value }, requestId);
 }
@@ -66,7 +70,7 @@ describe('first quiz question', () => {
     await action('Alice', { type: 'answer', questionId, choice: 1 });
     for (const actor of ['host', 'Alice', 'Bob']) {
       const projected = view(actor);
-      expect(Object.keys(projected).sort()).toEqual(['choices', 'ownAnswer', 'participants', 'phase', 'prompt', 'questionId']);
+      expect(Object.keys(projected).sort()).toEqual(['choices', 'ownAnswer', 'participants', 'phase', 'prompt', 'questionId', 'questionNumber', 'totalQuestions']);
       expect(projected.ownAnswer).toBe(actor === 'Alice' ? 1 : null);
       for (const player of projected.participants) expect(Object.keys(player).sort()).toEqual(['answered', 'id', 'name']);
       expect(quizViewSchema.safeParse({ ...projected, correctChoice: 1 }).success).toBe(false);
@@ -111,5 +115,76 @@ describe('first quiz question', () => {
     expect(view('host').participants).toHaveLength(2);
     expect(views.get('other-host')!.game).toBeNull();
     expect(quizActionSchema.safeParse({ type: 'answer', questionId: 'x', choice: 0, score: 999 }).success).toBe(false);
+  });
+});
+
+describe('complete quiz', () => {
+  it('plays five distinct questions, accumulates scores once, keeps tied ranks stable and resets on replay', async () => {
+    await lobby();
+    await command('Charlie', 'room:join', { code: views.get('host')!.code, name: 'Charlie' });
+    await command('host', 'game:start', { gameId: 'quiz', config: {} });
+    const firstGame = views.get('host')!.game!.id;
+    const answerKey = [1, 2, 0, 3, 1];
+    const questionIds = new Set<string>();
+    let previousQuestion = '';
+    for (const [index, correctChoice] of answerKey.entries()) {
+      const current = view('host'), questionId = current.questionId;
+      expect(current).toMatchObject({ phase: 'question', questionNumber: index + 1, totalQuestions: 5, ownAnswer: null });
+      expect(current.participants.every(player => !player.answered)).toBe(true);
+      expect(current).not.toHaveProperty('results');
+      expect(current).not.toHaveProperty('ranking');
+      expect(current).not.toHaveProperty('correctChoice');
+      questionIds.add(questionId);
+      if (previousQuestion) {
+        expect(await action('Alice', { type: 'answer', questionId: previousQuestion, choice: correctChoice })).toMatchObject({ ok: false });
+        expect(await action('host', { type: 'next', questionId: previousQuestion })).toMatchObject({ ok: false });
+      }
+      expect(await action('host', { type: 'next', questionId })).toMatchObject({ ok: false });
+      expect(await action('host', { type: 'return-lobby', questionId })).toMatchObject({ ok: false });
+      await Promise.all(['Alice', 'Bob'].map(actor => action(actor, { type: 'answer', questionId, choice: index === 4 ? (correctChoice + 1) % 4 : correctChoice })));
+      await action('host', { type: 'reveal', questionId });
+      const revealed = view('host');
+      if (revealed.phase !== 'revealed') throw new Error('Expected revelation');
+      expect(revealed.results.map(player => player.totalScore)).toEqual([Math.min(index + 1, 4), Math.min(index + 1, 4), 0]);
+      expect(await action('host', { type: 'reveal', questionId })).toMatchObject({ ok: false });
+      expect(view('host')).toEqual(revealed);
+      expect(await action('Bob', { type: 'next', questionId })).toMatchObject({ ok: false });
+      await action('host', { type: 'next', questionId });
+      previousQuestion = questionId;
+    }
+    expect(questionIds.size).toBe(5);
+    const final = quizViewSchema.parse(views.get('host')!.game!.view);
+    expect(final).toMatchObject({ phase: 'results', ranking: [{ name: 'Alice', score: 4, rank: 1 }, { name: 'Bob', score: 4, rank: 1 }, { name: 'Charlie', score: 0, rank: 3 }] });
+    for (const actor of ['Alice', 'Bob', 'Charlie']) expect(quizViewSchema.parse(views.get(actor)!.game!.view)).toEqual(final);
+    expect(await action('Alice', { type: 'return-lobby', questionId: previousQuestion })).toMatchObject({ ok: false });
+    expect(await action('host', { type: 'next', questionId: previousQuestion })).toMatchObject({ ok: false });
+    expect(quizViewSchema.parse(views.get('host')!.game!.view)).toEqual(final);
+    await action('host', { type: 'return-lobby', questionId: previousQuestion });
+    expect(views.get('host')!.phase).toBe('lobby');
+    expect(views.get('host')!.game).toBeNull();
+    expect(views.get('host')!.players).toHaveLength(3);
+    await command('host', 'game:start', { gameId: 'quiz', config: {} });
+    expect(views.get('host')!.game!.id).not.toBe(firstGame);
+    expect(await command('Alice', 'game:action', { gameId: firstGame, revision: 0, action: { type: 'answer', questionId: 'solar-system', choice: 1 } })).toMatchObject({ ok: false, error: { code: 'STALE_STATE' } });
+    await action('host', { type: 'reveal', questionId: view('host').questionId });
+    const replay = view('host');
+    if (replay.phase !== 'revealed') throw new Error('Expected revelation');
+    expect(replay.results.every(player => player.totalScore === 0 && player.score === 0 && player.answer === null)).toBe(true);
+  });
+  it('removes voluntary departures only when returning to the lobby and retains other identities', async () => {
+    await start();
+    const bobId = views.get('Bob')!.viewer.sessionId;
+    await command('Alice', 'room:leave');
+    for (let index = 0; index < 5; index++) {
+      const questionId = view('host').questionId;
+      await action('host', { type: 'reveal', questionId });
+      await action('host', { type: 'next', questionId });
+    }
+    const final = quizViewSchema.parse(views.get('host')!.game!.view);
+    expect(final.phase).toBe('results');
+    if (final.phase !== 'results') throw new Error('Expected final results');
+    expect(final.ranking).toHaveLength(2);
+    await action('host', { type: 'return-lobby', questionId: final.questionId });
+    expect(views.get('host')!.players).toEqual([{ id: bobId, name: 'Bob', connected: true }]);
   });
 });
