@@ -3,13 +3,28 @@ import { closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms
 
 const choices = ['B Jupiter', 'C Six', 'A Tokyo', 'D H2O', 'B Sept'];
 
-test('plays five questions, keeps final ties, returns to the same lobby and replays from zero', async ({ createActors }, testInfo) => {
+test('plays two complete games without external HTTP access, keeps ties and replays from zero', async ({ createActors, baseURL }, testInfo) => {
   test.setTimeout(60_000);
   const { host, players } = await createActors(3);
+  const actors = [host, ...players];
+  const origin = new URL(baseURL!).origin;
+  const externalRequests: string[] = [];
+  for (const actor of actors) {
+    // Keep LAN transport available while denying external assets/services, including on reload.
+    await actor.context.route('**/*', route => {
+      if (new URL(route.request().url()).origin === origin) return route.continue();
+      externalRequests.push(route.request().url());
+      return route.abort('blockedbyclient');
+    });
+    actor.page.on('websocket', socket => {
+      const url = new URL(socket.url());
+      url.protocol = url.protocol === 'wss:' ? 'https:' : 'http:';
+      if (url.origin !== origin) externalRequests.push(socket.url());
+    });
+  }
   const names = ['Alice', 'Benoît', 'Camille'];
   const code = await createRoom(host.page);
   for (const [index, player] of players.entries()) await joinRoom(player.page, code, names[index]!);
-  const actors = [host, ...players];
   const identities = await Promise.all(actors.map(actor => actor.page.evaluate(() => sessionStorage.getItem('party-games.session'))));
   for (let game = 0; game < 2; game++) {
     await host.page.getByRole('button', { name: 'Lancer le quiz', exact: true }).click();
@@ -67,4 +82,5 @@ test('plays five questions, keeps final ties, returns to the same lobby and repl
     }
   }
   await closeRoom(host.page);
+  expect(externalRequests, 'No actor should request an external resource or WebSocket').toEqual([]);
 });

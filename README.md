@@ -16,6 +16,7 @@ Le dépôt contient le socle technique, l’infrastructure E2E multijoueur et le
 - [Développement local et vérifications](docs/DEVELOPMENT.md)
 - [Ajouter un jeu](docs/ADDING_A_GAME.md)
 - [Roadmap d’implémentation](docs/ROADMAP.md)
+- [Recette locale sur TV et smartphones](docs/RECETTE.md)
 
 ## Démarrage local
 
