@@ -160,3 +160,13 @@ Les tests décodent le QR réellement rendu et rejoignent la room avec deux cont
 **Vérification physique encore à effectuer :** scanner le QR affiché sur une télévision depuis de vrais smartphones du même réseau. Le décodage automatisé et l’admission navigateur seront consignés séparément de cette recette.
 
 Prochaine étape : R9, recette locale complète sur ordinateur/TV et deux smartphones, avec scan, partie complète, interruptions et seconde partie. Ses objectifs et dépendances restent inchangés.
+
+## Préparation R9 — recette locale complète
+
+**Statut : préparation automatisée vérifiée ; recette matérielle en attente.** Le propriétaire effectuera ultérieurement les essais sur TV et deux smartphones. R9 n’est pas clôturée et ses objectifs/dépendances restent inchangés.
+
+La [fiche de recette](RECETTE.md) décrit la préparation du build local, l’absence de WAN en conservant le LAN, l’admission par QR/lien/code, cinq questions, les interruptions joueur/hôte, le classement, une seconde partie et la fermeture. Elle fournit les informations d’environnement à relever, les résultats attendus et les conditions de clôture. Aucun résultat matériel n’est prérempli comme réussi.
+
+Le scénario de deux parties existant est renforcé sans ajouter de fonctionnalité ni dépendance : les quatre contextes indépendants bloquent les requêtes HTTP externes dès le chargement et vérifient l’absence de ressources/WebSockets externes. Les tests de QR, délais réels et reconnexions restent conservés dans la suite. Ce contrôle distingue explicitement l’automatisation Chromium de la recette physique.
+
+Vérifications du 23 octobre 2026 sur la branche R9 : `pnpm check` réussi (36 tests Vitest, lint, typage strict et compilation), `pnpm test:e2e` réussi (64 tests Chromium bureau/mobile, 3 minutes). Liens locaux des documents modifiés et `git diff --check` vérifiés. Aucun défaut bloquant observé dans ces scénarios automatisés ; aucune validation physique effectuée.
