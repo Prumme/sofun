@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { QuizPanel } from '@/features/quiz/QuizPanel';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
@@ -111,7 +112,8 @@ export function HostRoomPage() {
         <Button variant="secondary" onClick={() => { client.current?.disconnect(); client.current?.connect(); }}>Réessayer la connexion</Button>
       </div>}
 
-      {room ? <section className="host-lobby" aria-labelledby="lobby-title">
+      {room ? <section className="host-lobby" aria-label="Room hôte">
+        {!room.game && <>
         <div className="eyebrow"><span className="line" /> VOTRE SOIRÉE COMMENCE ICI</div>
         <h1 id="lobby-title">Votre room est <span>prête.</span></h1>
         <p className="host-intro">Gardez cet écran ouvert sur l’ordinateur ou la télévision.</p>
@@ -122,6 +124,8 @@ export function HostRoomPage() {
         </Card>
         <div className="host-join-instructions"><p>Sur votre téléphone, ouvrez cette application et choisissez <strong>« Rejoindre une room »</strong>.</p></div>
         <PlayersList players={room.players} />
+        </>}
+        <QuizPanel key={room.game?.id ?? 'lobby'} snapshot={room} ready={ready} getClient={() => client.current} />
         <RoomExit key={room.roomId} role="host" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); requestId.current = null; }} />
       </section> : snapshot ? <section className="host-welcome">
         <h1>Une session est déjà <span>active.</span></h1>

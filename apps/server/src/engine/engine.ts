@@ -5,6 +5,7 @@ import type { GameDefinition, ActionContext, GameContext, GameEffect, Transition
 // Type erasure is confined to the registry; each game is checked by defineGame.
 export interface RegisteredGame {
   id: string;
+  actionConcurrency: 'strict-revision' | 'game-validated';
   setup(context: GameContext, config: Json): Transition<unknown, Json>;
   act(state: unknown, action: Json, context: ActionContext): Transition<unknown, Json>;
   tick(state: unknown, timer: Json, context: GameContext): Transition<unknown, Json>;
@@ -13,6 +14,7 @@ export interface RegisteredGame {
 export function defineGame<S, C extends Json, A extends Json, V extends Json, T extends Json>(game: GameDefinition<S, C, A, V, T>): RegisteredGame {
   return {
     id: game.id,
+    actionConcurrency: game.actionConcurrency ?? 'strict-revision',
     setup: (context, config) => game.setup(context, game.configSchema.parse(config)),
     act: (state, action, context) => {
       const result = game.handleAction(structuredClone(state) as S, game.actionSchema.parse(action), context);

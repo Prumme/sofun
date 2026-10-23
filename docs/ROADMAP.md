@@ -15,7 +15,7 @@ Le monolithe modulaire TypeScript existant est conservé. Ne pas recréer les se
 - Audit initial : `pnpm check` réussi (13 tests Vitest), puis 6 tests Playwright réussis sur le build compilé. Ces résultats précèdent l’ajout de R0.
 - Recette sur vrais smartphones et télévision, capacité cible et compatibilité hors Chromium à vérifier.
 
-Deux points sont à traiter au moment du quiz : le contrôle strict de la révision globale peut refuser des réponses concurrentes valides ; `finished` efface immédiatement le jeu, ce qui impose de conserver une phase de résultats avant le retour au lobby. Aucun changement du moteur n’est effectué par R0.
+Deux points ont été repérés à l’audit : la révision globale peut refuser des réponses concurrentes valides, et `finished` efface immédiatement le jeu. R4 traite la concurrence via une option ciblée du SDK validée par le propriétaire et conserve une phase de révélation sans terminer le jeu ; R5 ajoutera le retour au lobby. Aucun changement du moteur n’était effectué par R0.
 
 ## Premier quiz visé
 
@@ -107,4 +107,14 @@ Rechargement et reconnexion dans le même onglet conservent l’identité sans d
 
 Les scénarios Playwright multicontextes couvrent reprise, présence hors ligne, départ et réadmission, annulation et fermeture collective, identifiants invalides, session devenue périmée hors ligne et accusé perdu.
 
-Prochaine étape : R4, jouer une première question de quiz selon les règles de cette roadmap. Les objectifs et dépendances métier de R4 à R9 restent inchangés ; la recette matérielle reste R9.
+R4 complète désormais le parcours avec une première question de quiz. Les objectifs et dépendances métier de R4 à R9 restent inchangés ; la recette matérielle reste R9.
+
+## Livraison R4
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (24 tests Vitest, lint, typage strict et builds), `pnpm test:e2e` réussi (46 tests bureau/mobile), puis `pnpm exec playwright test quiz --repeat-each=2` réussi (12 passages). Les captures hôte/mobile ont été inspectées. La recette sur appareils physiques reste R9.
+
+L’hôte lance le quiz avec au moins deux participants figés au lancement. Chaque joueur répond une seule fois à une question française à quatre choix. Le serveur masque la solution, les scores et les choix adverses avant la révélation manuelle par l’hôte, puis attribue un point par bonne réponse et zéro pour erreur ou absence. Les résultats restent affichés jusqu’à fermeture de la room.
+
+L’ajustement de concurrence du SDK a été explicitement validé : seul le quiz opte pour une validation métier de la question/phase/acteur/doublon à la place de l’égalité stricte de révision. Les autres jeux conservent leur garantie antérieure ; partie incorrecte et révision future restent rejetées pour tous. Les tests couvrent notamment deux réponses sur la même révision.
+
+La prochaine tâche est R5 : enchaîner les cinq questions, afficher le classement final, revenir au lobby et rejouer. Les objectifs et dépendances de R5 à R9 restent inchangés. Aucun chronomètre ni révélation automatique n’est ajouté par R4.

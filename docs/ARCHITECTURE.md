@@ -59,7 +59,7 @@ Chaque commande, déconnexion et minuterie est ordonnée dans la file de sa room
 
 Le client fournit un UUID de requête. Le serveur retient les 256 derniers résultats par session ; les opérations d’établissement/reprise sont dédupliquées par connexion. Un identifiant réutilisé pour un contenu différent est refusé. La protection est bornée ; elle ne promet pas une exécution exactement une fois après éviction ou fin de session.
 
-Une intention de jeu vise l’identifiant de partie et la révision observée. Un état obsolète est refusé avec publication d’une projection fraîche. La reprise authentifie puis renvoie un instantané complet, sans rejeu automatique d’intentions en attente. Les messages malformés conservent leur UUID de requête s’il est valide ; sinon, l’erreur reçoit un nouvel UUID serveur.
+Une intention de jeu vise l’identifiant de partie et la révision observée. Par défaut, un état obsolète est refusé avec publication d’une projection fraîche. L’option de concurrence validée pour le quiz R4 est précisée ci-dessous. La reprise authentifie puis renvoie un instantané complet, sans rejeu automatique d’intentions en attente. Les messages malformés conservent leur UUID de requête s’il est valide ; sinon, l’erreur reçoit un nouvel UUID serveur.
 
 ## Réseau et confiance
 
@@ -69,9 +69,9 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Aucun jeu de production, catalogue interactif métier ou QR code n’est encore disponible.
+- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le premier quiz R4 joue une question avec révélation manuelle ; le catalogue métier et le QR code restent à développer.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
-- Premier jeu, public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
+- Public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
 - Un stockage durable demandera une nouvelle décision de concurrence et de reprise ; remplacer la Map ne suffit pas.
 - Protections de branches, politique de fusion et hébergement de CI à convenir.
@@ -105,3 +105,15 @@ Les interfaces réutilisent `session:resume`, `room:leave` et `room:close`, sans
 Les actions sont bloquées tant que la connexion n’est pas prête ou pendant leur envoi. Les credentials sont supprimés après confirmation du départ ou réception de la fermeture. Une reprise refusée pour session invalide ou room absente efface aussi la vue locale et rend le formulaire ou l’accueil accessible. Après un accusé de départ perdu, une action explicite permet de reconnecter et vérifier la session réelle ; aucune intention de départ ou fermeture n’est rejouée automatiquement. La création et l’admission peuvent ensuite recommencer avec un nouvel identifiant de requête.
 
 Les garanties de reprise restent limitées à l’onglet et à la durée de vie du serveur mémoire. Le cycle de vie pendant un quiz et ses interruptions reste aux étapes suivantes.
+
+## Première question de quiz — R4
+
+Le quiz est enregistré explicitement côté serveur et son panneau est intégré aux écrans hôte/joueur existants. Les contrats Zod publics séparent configuration vide, intentions `answer`/`reveal` et vues `question`/`revealed`. La question et sa solution restent dans le module serveur. La vue avant révélation contient uniquement les choix publics, la présence d’une réponse pour chaque participant et le propre choix du joueur ; aucun score, choix adverse ni solution. Après révélation, le serveur publie solution, réponses et points.
+
+Les participants sont figés au lancement à partir des identités du lobby (au moins deux, y compris une identité temporairement hors ligne). L’hôte lance et révèle ; les joueurs répondent une seule fois, avec un index de choix validé et l’identifiant de question. Aucun calcul fiable n’est confié au client. Une question révélée reste affichée, sans `finished`, jusqu’à fermeture de la room ; R5 ajoutera enchaînement, classement et retour au lobby, R6 le temps.
+
+### Concurrence — ajustement validé pour R4
+
+Le propriétaire a validé l’option explicite `GameDefinition.actionConcurrency: 'game-validated'`. Sans cette option, l’adaptateur conserve `strict-revision` : toute révision différente reste refusée. Pour un jeu optant pour la validation métier, la room accepte une révision ancienne, mais jamais une révision future ni un autre identifiant de partie. La file séquentielle par room et la déduplication restent inchangées.
+
+Le quiz utilise cette option : son validateur vérifie rôle, appartenance au groupe figé, identifiant de question, phase ouverte et absence de réponse antérieure. Deux joueurs répondant sur la même révision peuvent donc réussir ; une réponse ancienne ne peut pas changer un résultat révélé. Les futures questions R5 devront conserver des identifiants distincts. Aucun rejeu client automatique ni suppression globale du contrôle de révision n’est introduit. Cette solution ajoute une option ciblée au SDK ; demander un nouvel envoi utilisateur conserverait les refus de réponses concurrentes, et assouplir tous les jeux changerait leurs garanties.

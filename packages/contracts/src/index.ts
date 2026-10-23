@@ -35,3 +35,6 @@ export const responseSchema = z.discriminatedUnion('ok', [
 ]);
 export type CommandResponse = z.infer<typeof responseSchema>;
 export const healthSchema = z.object({ status: z.literal('ok') }).strict();
+
+export { quizConfigSchema, quizActionSchema, quizViewSchema } from './games/quiz.js';
+export type { QuizConfig, QuizAction, QuizView } from './games/quiz.js';

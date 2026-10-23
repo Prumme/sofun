@@ -11,3 +11,5 @@
 L’écran partagé agit comme hôte, y compris pour les jeux sans téléphone. Il ne reçoit pas automatiquement les secrets des joueurs. La V1 autorise seulement la reprise des joueurs existants pendant une partie ; les nouvelles admissions se font au lobby.
 
 Les événements internes du moteur ne constituent pas un bus public. Ajouter un nouvel effet (audio serveur, I/O, etc.) exige de définir sa responsabilité et son comportement en cas d’échec avant de modifier le SDK.
+
+Le module `apps/server/src/games/quiz/quiz.ts` est le premier exemple de production. Il n’active pas `finished` à la révélation afin de garder les résultats visibles. Le contrôle de révision reste strict par défaut : n’activer `actionConcurrency: 'game-validated'` qu’avec une validation métier des intentions périmées (question/phase, acteur, doublon) et ses tests, comme le quiz R4. Le simple assouplissement d’une révision sans garde métier est insuffisant.

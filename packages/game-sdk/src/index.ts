@@ -22,6 +22,8 @@ export type ActionResult<State, Timer extends Json> =
   | { accepted: false; reason: string };
 export interface GameDefinition<State, Config extends Json, Action extends Json, View extends Json, Timer extends Json> {
   readonly id: string;
+  // Opt-in: the game must reject obsolete phases/questions and duplicate actions itself.
+  readonly actionConcurrency?: 'game-validated';
   readonly configSchema: z.ZodType<Config>;
   readonly actionSchema: z.ZodType<Action>;
   readonly viewSchema: z.ZodType<View>;

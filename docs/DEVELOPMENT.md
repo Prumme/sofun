@@ -9,7 +9,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », puis saisir le code et un pseudo. L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; les jeux et les contrôles de départ/fermeture ne sont pas encore livrés.
+L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », puis saisir le code et un pseudo. L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; le cycle de vie du lobby et la première question de quiz sont disponibles.
 
 ## Réseau local
 
@@ -51,7 +51,7 @@ Ouvrir `http://ADRESSE_LAN:3000`. `HOST` et `PORT` configurent cette exécution 
 
 ## Vérifications avant contribution
 
-Exécuter `pnpm check` et, pour un changement d’interface ou de transport, `pnpm test:e2e`. Les tests utilisent un jeu synthétique non enregistré en production. Tester manuellement sur un vrai téléphone après une modification de l’accès LAN ; l’émulation mobile ne vérifie ni Wi-Fi ni pare-feu.
+Exécuter `pnpm check` et, pour un changement d’interface ou de transport, `pnpm test:e2e`. Les tests du socle utilisent un jeu synthétique non enregistré en production ; les tests du quiz utilisent son vrai module. Tester manuellement sur un vrai téléphone après une modification de l’accès LAN ; l’émulation mobile ne vérifie ni Wi-Fi ni pare-feu.
 
 Avant d’étendre les pages, faire valider l’atelier : couleurs, typographie, lisibilité à distance, focus clavier, contrastes, cibles tactiles et mouvement réduit. Les modifications visuelles suivent [DESIGN.md](DESIGN.md).
 
@@ -120,3 +120,11 @@ Dans le même onglet, recharger l’écran hôte ou joueur reprend la session. L
 `tests/e2e/room-lifecycle.spec.ts` utilise des contextes indépendants pour vérifier identités conservées après rechargement, retour réseau sans doublon, départ/réadmission, annulation puis fermeture collective, session périmée hors ligne et secret invalide. Le scénario d’accusé de départ perdu transmet la vraie commande au serveur et retient uniquement sa confirmation ; le joueur vérifie ensuite sa session via l’interface. Aucun succès serveur n’est fabriqué. Les rooms sont fermées par l’hôte à la fin lorsque la session hôte reste disponible ; les rooms devenues inaccessibles disparaissent avec le processus de test.
 
 Commande ciblée après compilation : `pnpm exec playwright test room-lifecycle`. La reprise pendant un quiz sera couverte en R7.
+
+### Première question de quiz (R4)
+
+Créer une room et la rejoindre depuis deux contextes ou téléphones. « Lancer le quiz » ouvre la question sur tous les écrans. Chaque joueur choisit une réponse définitive ; l’hôte utilise « Révéler la réponse », puis les écrans affichent solution, choix et points calculés par le serveur. La room peut ensuite être fermée. Cette étape ne comporte ni chronomètre ni question suivante.
+
+`apps/server/test/quiz.test.ts` couvre rôles, configuration, réponses concurrentes sur la même révision, requêtes dédupliquées, choix définitif, mauvaises questions/parties/révisions futures, projection privée, absence de réponse et isolation. Les anciens tests du moteur conservent le contrôle strict de révision pour les jeux sans option de concurrence. `tests/e2e/quiz.spec.ts` vérifie le parcours visible hôte/deux joueurs, les doubles clics, les choix simultanés, la révélation anticipée, les points et une autre room inchangée. Les captures de question et résultats couvrent écran hôte et mobile.
+
+Commande ciblée après compilation : `pnpm exec playwright test quiz`. Les bonnes réponses ne doivent jamais être déplacées dans les contrats ou le frontend. La suite reste sans appels externes ni attentes temporelles arbitraires.

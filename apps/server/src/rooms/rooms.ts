@@ -172,7 +172,8 @@ export class Rooms {
     }
     if (name === 'game:action' && 'action' in data) {
       if (!room.game) throw new RoomError('INVALID_PHASE', 'Aucune partie active.');
-      if (room.game.id !== data.gameId || room.revision !== data.revision) {
+      const definition = this.engine.definition(room.game.type);
+      if (room.game.id !== data.gameId || data.revision > room.revision || (definition.actionConcurrency === 'strict-revision' && room.revision !== data.revision)) {
         this.emit(room); throw new RoomError('STALE_STATE', 'État obsolète.');
       }
       const transition = this.engine.definition(room.game.type).act(room.game.state, data.action, { ...this.context(room), actor: viewerFor(session) });
