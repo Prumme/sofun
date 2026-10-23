@@ -56,7 +56,7 @@ describe('first quiz question', () => {
     ]);
     expect(responses.every(response => response.ok)).toBe(true);
     expect(view('host').participants.every(player => player.answered)).toBe(true);
-    expect(await action('host', { type: 'reveal', questionId }, before)).toMatchObject({ ok: true });
+    expect(view('host').phase).toBe('revealed');
     for (const actor of ['host', 'Alice', 'Bob']) {
       expect(view(actor)).toMatchObject({ phase: 'revealed', correctChoice: 1, results: [{ name: 'Alice', answer: 1, score: 1 }, { name: 'Bob', answer: 2, score: 0 }] });
     }
@@ -70,7 +70,7 @@ describe('first quiz question', () => {
     await action('Alice', { type: 'answer', questionId, choice: 1 });
     for (const actor of ['host', 'Alice', 'Bob']) {
       const projected = view(actor);
-      expect(Object.keys(projected).sort()).toEqual(['choices', 'ownAnswer', 'participants', 'phase', 'prompt', 'questionId', 'questionNumber', 'totalQuestions']);
+      expect(Object.keys(projected).sort()).toEqual(['choices', 'deadline', 'ownAnswer', 'participants', 'phase', 'prompt', 'questionId', 'questionNumber', 'totalQuestions']);
       expect(projected.ownAnswer).toBe(actor === 'Alice' ? 1 : null);
       for (const player of projected.participants) expect(Object.keys(player).sort()).toEqual(['answered', 'id', 'name']);
       expect(quizViewSchema.safeParse({ ...projected, correctChoice: 1 }).success).toBe(false);

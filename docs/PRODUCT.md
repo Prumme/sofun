@@ -78,3 +78,9 @@ L’hôte révèle manuellement, même si une réponse manque. La solution et le
 Le quiz enchaîne cinq questions dans un ordre fixe. Après chaque révélation, l’hôte consulte les points de la question et le total cumulé, puis choisit « Question suivante ». Après la cinquième révélation, « Voir le classement final » affiche les scores sur cinq à tous les participants. Les ex æquo partagent leur rang (1, 1, 3), avec un ordre d’affichage stable issu du lobby.
 
 Le classement reste affiché jusqu’à ce que l’hôte choisisse « Retour au lobby ». La room conserve son code et les identités encore présentes. L’hôte peut relancer une partie, dont les réponses et les scores repartent de zéro. Les joueurs ayant quitté volontairement ne reviennent pas automatiquement au lobby. Cette étape reste sans chronomètre, avec révélation et progression manuelles.
+
+## Temps et révélation automatique — R6
+
+Chaque question accorde vingt secondes selon l’horloge du serveur. Les écrans affichent un compte à rebours indicatif. La solution apparaît automatiquement quand tous les participants fixés au lancement ont répondu ou lorsque le délai expire. Une réponse reçue trop tard est refusée ; une absence vaut zéro point, sans bonus de vitesse. Une déconnexion ne suspend pas le délai.
+
+L’hôte peut toujours écourter une question avec « Révéler la réponse ». Après révélation, il garde la main sur le passage à la suivante et sur l’affichage du classement final. Les résultats restent visibles sans limite de vingt secondes.

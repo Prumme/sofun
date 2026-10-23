@@ -123,7 +123,7 @@ Commande ciblée après compilation : `pnpm exec playwright test room-lifecycle`
 
 ### Première question de quiz (R4)
 
-Créer une room et la rejoindre depuis deux contextes ou téléphones. « Lancer le quiz » ouvre la question sur tous les écrans. Chaque joueur choisit une réponse définitive ; l’hôte utilise « Révéler la réponse », puis les écrans affichent solution, choix et points calculés par le serveur. La room peut ensuite être fermée. Cette étape ne comporte ni chronomètre ni question suivante.
+Créer une room et la rejoindre depuis deux contextes ou téléphones. « Lancer le quiz » ouvre la question sur tous les écrans. Chaque joueur choisit une réponse définitive ; l’hôte pouvait utiliser « Révéler la réponse » en R4 ; R6 ajoute la révélation automatique. Les écrans affichent solution, choix et points calculés par le serveur. La room peut ensuite être fermée. Cette étape ne comporte ni chronomètre ni question suivante.
 
 `apps/server/test/quiz.test.ts` couvre rôles, configuration, réponses concurrentes sur la même révision, requêtes dédupliquées, choix définitif, mauvaises questions/parties/révisions futures, projection privée, absence de réponse et isolation. Les anciens tests du moteur conservent le contrôle strict de révision pour les jeux sans option de concurrence. `tests/e2e/quiz.spec.ts` vérifie le parcours visible hôte/deux joueurs, les doubles clics, les choix simultanés, la révélation anticipée, les points et une autre room inchangée. Les captures de question et résultats couvrent écran hôte et mobile.
 
@@ -136,3 +136,11 @@ Après révélation, utiliser « Question suivante » pour les quatre premières
 `tests/e2e/quiz-complete.spec.ts` automatise deux parties complètes avec un hôte et trois participants dans quatre contextes indépendants. Il vérifie les cinq questions, les réponses réinitialisées, les scores après chaque révélation, les ex æquo, le classement conservé après rechargement, le retour au même code avec les mêmes identités et un second résultat différent. Un participant ne répond pas pour couvrir l’absence de réponse. Le test ferme sa room par l’interface. Les captures du classement hôte/mobile sont disponibles dans les résultats.
 
 Les tests serveur de quiz couvrent aussi les questions distinctes, les contrôles de rôle/phase sur `next` et `return-lobby`, les actions d’une ancienne question ou partie, la remise à zéro et le nettoyage des départs volontaires au retour au lobby. Les tests R4 d’une seule question sont conservés. Commande ciblée après compilation : `pnpm exec playwright test quiz-complete`.
+
+### Temps autoritaire (R6)
+
+Lancer le quiz puis répondre depuis tous les téléphones pour vérifier la révélation immédiate, ou laisser au moins une réponse en attente pour observer l’échéance serveur de vingt secondes. L’hôte peut encore révéler plus tôt. Le compteur est indicatif et dépend de l’horloge locale ; seul le serveur valide les réponses et publie la solution. Une nouvelle question dispose de vingt nouvelles secondes.
+
+`apps/server/test/quiz-timing.test.ts` utilise l’horloge contrôlée Vitest : limite à 19 999/20 000 ms, callback retardé, dernière réponse, annulation de l’ancienne minuterie, délai suivant, absence de pause sans hôte, fermeture et callback ancien/précoce. `tests/e2e/quiz-timing.spec.ts` attend la vraie révélation après vingt secondes sur le serveur de test, sans accélérer ni remplacer sa minuterie. Il avance uniquement l’heure d’un navigateur pour vérifier qu’un compteur à zéro ne décide pas du résultat ; la réponse encore valide sur le serveur est acceptée. Les assertions attendent les résultats visibles, sans `waitForTimeout`.
+
+Le scénario de partie complète conserve deux parties de cinq questions ; la seconde utilise la révélation automatique sur la dernière réponse pour toutes les questions. Le test d’échéance ajoute environ vingt secondes par projet bureau/mobile à la suite. Commande ciblée après compilation : `pnpm exec playwright test quiz-timing`. Le transport et la configuration Playwright restent inchangés.

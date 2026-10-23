@@ -180,3 +180,6 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 .quiz-ranking small { display: block; color: var(--muted-foreground); font-size: 13px; margin-top: 6px; }
 .quiz-rank { color: var(--primary); font-weight: 600; }
 .quiz-player .quiz-ranking li { grid-template-columns: 24px minmax(0, 1fr) auto; font-size: 17px; padding: 16px; gap: 10px; }
+
+.quiz-countdown { display: flex; align-items: center; gap: 16px; color: var(--muted-foreground); margin: 20px 0; }
+.quiz-countdown [role=timer] { color: var(--foreground); font-size: 28px; font-variant-numeric: tabular-nums; font-weight: 600; }

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { quizViewSchema } from '@party/contracts';
 import type { QuizAction, Snapshot } from '@party/contracts';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,14 @@ export function QuizPanel({ snapshot, ready, getClient }: Props) {
   const pending = useRef(false);
   const host = snapshot.viewer.role === 'host';
   const parsed = snapshot.game?.type === 'quiz' ? quizViewSchema.safeParse(snapshot.game.view) : null;
+  const deadline = parsed?.success && parsed.data.phase === 'question' ? parsed.data.deadline : null;
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    if (deadline === null) return;
+    const timer = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(timer);
+  }, [deadline]);
+  const seconds = deadline === null ? 0 : Math.max(0, Math.min(20, Math.ceil((deadline - now) / 1000)));
   async function send(action?: QuizAction) {
     const client = getClient();
     if (!client || !ready || pending.current) return;
@@ -28,7 +36,7 @@ export function QuizPanel({ snapshot, ready, getClient }: Props) {
     } finally { pending.current = false; setBusy(false); }
   }
   if (!snapshot.game) return host ? <Card className="quiz-start">
-    <h2>Un premier quiz</h2><p>Deux joueurs minimum. Cinq questions, quatre choix, une réponse définitive par question. Un point par bonne réponse ; l’hôte révèle quand il le souhaite.</p>
+    <h2>Un premier quiz</h2><p>Deux joueurs minimum. Cinq questions, quatre choix, une réponse définitive par question. Un point par bonne réponse. Vingt secondes par question, révélation automatique quand tous ont répondu ou à la fin du temps.</p>
     {error && <p role="alert">{error}</p>}
     <Button disabled={!ready || busy || snapshot.players.length < 2} onClick={() => { void send(); }} aria-busy={busy}>{busy ? 'Lancement en cours…' : 'Lancer le quiz'}</Button>
     {snapshot.players.length < 2 && <p>Invitez au moins deux joueurs pour commencer.</p>}
@@ -48,6 +56,7 @@ export function QuizPanel({ snapshot, ready, getClient }: Props) {
   return <section className={`quiz-panel ${host ? 'quiz-host' : 'quiz-player'}`} aria-labelledby="quiz-question">
     <div className="eyebrow">QUIZ · {revealed ? 'RÉVÉLATION' : 'QUESTION'} {view.questionNumber} / {view.totalQuestions}</div>
     <h1 id="quiz-question">{view.prompt}</h1>
+    {!revealed && <div className="quiz-countdown"><span>Temps restant (indicatif)</span><span role="timer" aria-label="Temps restant" aria-live="off">{seconds} s</span></div>}
     <p className="quiz-progress" role="status">{answered} / {view.participants.length} réponses reçues</p>
     {error && <p role="alert">{error}</p>}
     <div className="quiz-choices">
@@ -57,8 +66,8 @@ export function QuizPanel({ snapshot, ready, getClient }: Props) {
         <span className="quiz-letter">{String.fromCharCode(65 + index)}</span><span>{choice}</span>
       </Button>)}
     </div>
-    {!revealed && !host && <p className="quiz-note" role="status">{view.ownAnswer !== null ? 'Réponse enregistrée. Attendez la révélation de l’hôte.' : 'Choisissez votre réponse. Elle sera définitive.'}</p>}
-    {!revealed && host && <div className="quiz-controls"><p>Révélez quand vous êtes prêt, même si des réponses manquent.</p><Button disabled={!ready || busy} onClick={() => { void send({ type: 'reveal', questionId: view.questionId }); }} aria-busy={busy}>Révéler la réponse</Button></div>}
+    {!revealed && !host && <p className="quiz-note" role="status">{view.ownAnswer !== null ? 'Réponse enregistrée. En attente de la révélation.' : 'Choisissez votre réponse. Elle sera définitive.'}</p>}
+    {!revealed && host && <div className="quiz-controls"><p>La réponse sera révélée automatiquement. Vous pouvez écourter la question.</p><Button disabled={!ready || busy} onClick={() => { void send({ type: 'reveal', questionId: view.questionId }); }} aria-busy={busy}>Révéler la réponse</Button></div>}
     {revealed && <div className="quiz-results"><h2>Résultats de la question</h2><ul aria-label="Résultats de la question">
       {view.results.map(result => <li key={result.id}><span>{result.name}</span><span>{result.answer === null ? 'Sans réponse' : view.choices[result.answer]}</span><strong>{result.score} point</strong><span className="quiz-total">Total : {result.totalScore}</span></li>)}
     </ul><p>Question terminée.</p>{host ? <Button disabled={!ready || busy} aria-busy={busy} onClick={() => { void send({ type: 'next', questionId: view.questionId }); }}>{view.questionNumber === view.totalQuestions ? 'Voir le classement final' : 'Question suivante'}</Button> : <p>L’hôte prépare la suite.</p>}</div>}

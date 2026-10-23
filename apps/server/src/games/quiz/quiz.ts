@@ -7,16 +7,28 @@ import { questions } from './questions.js';
 export interface QuizState {
   phase: 'question' | 'revealed' | 'results';
   questionIndex: number;
+  deadline: number;
   participants: { id: string; name: string }[];
   answers: Record<string, number>;
   scores: Record<string, number>;
 }
-function transition(state: QuizState): Transition<QuizState, never> { return { state, events: [], effects: [] }; }
-export const quizDefinition: GameDefinition<QuizState, QuizConfig, QuizAction, QuizView, never> = {
+type QuizTimer = { questionId: string };
+const QUESTION_DURATION_MS = 20_000;
+const TIMER_KEY = 'quiz-deadline';
+function transition(state: QuizState): Transition<QuizState, QuizTimer> { return { state, events: [], effects: [] }; }
+function openQuestion(state: QuizState, now: number): Transition<QuizState, QuizTimer> {
+  const next = { ...state, phase: 'question' as const, deadline: now + QUESTION_DURATION_MS, answers: {} };
+  return { ...transition(next), effects: [{ type: 'schedule', key: TIMER_KEY, delayMs: QUESTION_DURATION_MS, timer: { questionId: questions[next.questionIndex]!.id } }] };
+}
+function reveal(state: QuizState): Transition<QuizState, QuizTimer> {
+  const correctChoice = questions[state.questionIndex]!.correctChoice;
+  return { ...transition({ ...state, phase: 'revealed', scores: Object.fromEntries(state.participants.map(player => [player.id, state.scores[player.id]! + (state.answers[player.id] === correctChoice ? 1 : 0)])) }), effects: [{ type: 'cancel', key: TIMER_KEY }] };
+}
+export const quizDefinition: GameDefinition<QuizState, QuizConfig, QuizAction, QuizView, QuizTimer> = {
   id: 'quiz', actionConcurrency: 'game-validated', configSchema: quizConfigSchema, actionSchema: quizActionSchema, viewSchema: quizViewSchema,
   setup(context) {
     if (context.players.length < 2) throw new Error('Deux joueurs sont nécessaires.');
-    return transition({ phase: 'question', questionIndex: 0, participants: context.players.map(player => ({ ...player })), answers: {}, scores: Object.fromEntries(context.players.map(player => [player.id, 0])) });
+    return openQuestion({ phase: 'question', questionIndex: 0, deadline: 0, participants: context.players.map(player => ({ ...player })), answers: {}, scores: Object.fromEntries(context.players.map(player => [player.id, 0])) }, context.now);
   },
   handleAction(state, action, context) {
     const question = questions[state.questionIndex]!;
@@ -24,18 +36,23 @@ export const quizDefinition: GameDefinition<QuizState, QuizConfig, QuizAction, Q
     if (action.type !== 'answer') {
       if (context.actor.role !== 'host') return { accepted: false, reason: 'Hôte requis.' };
       if (action.type === 'return-lobby' && state.phase === 'results') return { accepted: true, transition: { ...transition({ ...state }), finished: true } };
-      if (action.type === 'next' && state.phase === 'revealed') return { accepted: true, transition: transition(state.questionIndex === questions.length - 1
-        ? { ...state, phase: 'results' }
-        : { ...state, phase: 'question', questionIndex: state.questionIndex + 1, answers: {} }) };
-      if (action.type === 'reveal' && state.phase === 'question') return { accepted: true, transition: transition({ ...state, phase: 'revealed', scores: Object.fromEntries(state.participants.map(player => [player.id, state.scores[player.id]! + (state.answers[player.id] === question.correctChoice ? 1 : 0)])) }) };
+      if (action.type === 'next' && state.phase === 'revealed') return { accepted: true, transition: state.questionIndex === questions.length - 1
+        ? transition({ ...state, phase: 'results' })
+        : openQuestion({ ...state, questionIndex: state.questionIndex + 1 }, context.now) };
+      if (action.type === 'reveal' && state.phase === 'question') return { accepted: true, transition: reveal({ ...state }) };
       return { accepted: false, reason: 'Action indisponible dans cette phase.' };
     }
-    if (state.phase !== 'question') return { accepted: false, reason: 'Question inactive.' };
+    if (state.phase !== 'question' || context.now >= state.deadline) return { accepted: false, reason: 'Question inactive.' };
     if (context.actor.role !== 'player' || !state.participants.some(player => player.id === context.actor.sessionId)) return { accepted: false, reason: 'Participant requis.' };
     if (Object.hasOwn(state.answers, context.actor.sessionId)) return { accepted: false, reason: 'Réponse déjà enregistrée.' };
-    return { accepted: true, transition: transition({ ...state, answers: { ...state.answers, [context.actor.sessionId]: action.choice } }) };
+    const answered = { ...state, answers: { ...state.answers, [context.actor.sessionId]: action.choice } };
+    return { accepted: true, transition: state.participants.every(player => Object.hasOwn(answered.answers, player.id)) ? reveal(answered) : transition(answered) };
   },
-  handleTimer(state) { return transition({ ...state }); },
+  handleTimer(state, timer, context) {
+    if (state.phase !== 'question' || timer.questionId !== questions[state.questionIndex]!.id) return transition({ ...state });
+    if (context.now >= state.deadline) return reveal({ ...state });
+    return { ...transition({ ...state }), effects: [{ type: 'schedule', key: TIMER_KEY, delayMs: state.deadline - context.now, timer }] };
+  },
   project(state, viewer) {
     const question = questions[state.questionIndex]!;
     if (state.phase === 'results') {
@@ -46,7 +63,7 @@ export const quizDefinition: GameDefinition<QuizState, QuizConfig, QuizAction, Q
       };
     }
     const common = {
-      questionId: question.id, questionNumber: state.questionIndex + 1, totalQuestions: 5 as const, prompt: question.prompt, choices: [...question.choices] as [string, string, string, string],
+      deadline: state.deadline, questionId: question.id, questionNumber: state.questionIndex + 1, totalQuestions: 5 as const, prompt: question.prompt, choices: [...question.choices] as [string, string, string, string],
       participants: state.participants.map(player => ({ ...player, answered: Object.hasOwn(state.answers, player.id) })),
       ownAnswer: viewer.role === 'player' ? state.answers[viewer.sessionId] ?? null : null,
     };

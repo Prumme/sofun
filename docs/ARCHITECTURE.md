@@ -69,7 +69,7 @@ En développement, Vite écoute toutes les interfaces sur 5173 par défaut et re
 
 ## Limites et décisions encore ouvertes
 
-- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R5 joue cinq questions avec révélation manuelle, classement final et retour au lobby ; temps, catalogue métier et QR code restent à développer.
+- Les parcours hôte/joueur permettent de créer et rejoindre une room, avec une liste de joueurs synchronisée. Le quiz R6 joue cinq questions avec temps autoritaire, révélation automatique, classement final et retour au lobby ; résilience complète, catalogue métier et QR code restent à développer.
 - Palette et police de la démonstration restent à valider visuellement avant de décliner les pages.
 - Public, nombre maximal de participants/rooms, équipes, modération, compatibilité navigateurs et critères de performance à définir.
 - Aucune durabilité, distribution multi-processus, récupération après crash ou garantie de traitement des effets après panne.
@@ -125,3 +125,11 @@ Le quiz étend son état privé avec l’index de question et les scores cumulé
 L’intention hôte `next`, associée à l’identifiant de question, n’est autorisée qu’après révélation. Après la cinquième, elle expose la phase `results` sans `finished`. Le classement reste ainsi présent dans l’état serveur, y compris après rechargement. L’intention hôte `return-lobby`, autorisée uniquement depuis ces résultats, utilise le `finished` existant ; rooms, code et sessions restent en place et les départs volontaires sont nettoyés par le mécanisme existant. Un nouveau lancement crée un nouvel identifiant de partie et des scores nuls.
 
 Convention d’affichage utilisée pour les égalités : rang de compétition partagé (1, 1, 3), ordre d’entrée au lobby conservé à score égal, aucun départage. Cette convention concrétise le classement stable demandé sans changer le barème. Les actions retardées sont contrôlées par l’identifiant de partie, l’identifiant distinct de question et la phase ; le mode de concurrence validé en R4 est conservé. Aucun changement du SDK, du moteur ou du transport n’est nécessaire. Chronomètre et révélation automatique restent R6.
+
+## Temps autoritaire du quiz — R6
+
+Chaque ouverture de question calcule `deadline = context.now + 20_000` côté serveur et programme un effet `schedule` existant, sous une clé unique de minuterie pour le quiz. La question et son échéance restent dans l’état privé ; la vue publique ajoute l’échéance absolue validée par Zod. Le callback vérifie l’identifiant de question, la phase et l’heure serveur ; s’il arrive trop tôt, il reprogramme uniquement le délai restant.
+
+Chaque intention de réponse est refusée lorsque `context.now >= deadline`, même si le callback est retardé. La dernière réponse attendue révèle automatiquement ; sinon la minuterie révèle les réponses reçues et attribue zéro aux absences. La révélation manuelle anticipée de l’hôte reste disponible. Toutes ces voies utilisent la même transition de calcul des points et annulent la minuterie, pour créditer chaque question une seule fois. Le passage à la suivante reste une action de l’hôte et crée une nouvelle échéance. Les gardes de question, l’annulation/remplacement de clé et le nettoyage de partie/room réutilisent les garanties existantes du moteur.
+
+Le compte à rebours React est indicatif : différence entre l’échéance serveur et l’heure locale, rafraîchie quatre fois par seconde et bornée entre zéro et vingt. Aucun temps ou score client n’est envoyé au serveur. Une horloge locale décalée peut donc fausser le chiffre affiché ; elle ne révèle pas la solution, ne valide pas une réponse tardive et ne bloque pas une réponse encore valide sur le serveur. Le navigateur attend toujours l’instantané autoritaire de révélation. Aucune synchronisation d’horloges, nouveau transport ou modification du SDK/moteur n’est introduit.
