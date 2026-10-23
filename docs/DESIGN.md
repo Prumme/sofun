@@ -311,3 +311,11 @@ Cette démonstration servira à valider les tokens, les variantes et la cohéren
 ## 14. Admission par QR code
 
 Le QR de room reste noir sur fond blanc, avec une marge de lecture de quatre modules, sans halo ni décoration sur les modules. Ses couleurs sont centralisées dans les tokens `--qr-background` et `--qr-foreground`. Sur écran hôte large, le code manuel et le QR sont présentés côte à côte ; les petits écrans empilent ces informations. Le lien textuel et la saisie manuelle constituent les alternatives au scan. Vérifier le scan réel depuis la télévision lors de R9.
+
+## 15. Évolutions visuelles validées — C1/C2
+
+Choix fixes : triangle rose-rouge, losange cyan, cercle jaune et carré vert, couleurs centralisées dans `--choice-a` à `--choice-d`. TV : forme et texte ; téléphone : formes seules en deux colonnes, avec nom accessible complet et sélection marquée par contour et coche. Les textes réapparaissent à la révélation. Les votes sociaux et mensonges gardent leurs libellés textuels.
+
+Le lobby hôte réutilise le visuel de l’atelier avec un moniteur et un téléphone par connexion active. L’orbite continue lente et le léger balancement constituent une exception ciblée à la préférence générale pour les animations courtes : ils restent limités au lobby hôte et sont désactivés par mouvement réduit. Deux anneaux évitent les superpositions jusqu’à douze joueurs. La liste textuelle conserve les identités hors ligne ; les téléphones joueurs n’affichent pas cette animation.
+
+Le dessin utilise exclusivement `--drawing-background` et `--drawing-ink` pour le fond blanc et le crayon noir. Les illustrations du jeu d’images sont des indices vectoriels originaux embarqués, sans ressources externes ; sources reproductibles avec les assets serveur.

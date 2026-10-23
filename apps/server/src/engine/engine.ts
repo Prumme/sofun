@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type { Json } from '@party/contracts';
-import type { GameDefinition, ActionContext, GameContext, GameEffect, Transition, Viewer } from '@party/game-sdk';
+import type { GameDefinition, ActionContext, GameContext, GameSetupContext, GameEffect, Transition, Viewer } from '@party/game-sdk';
+
+export class GameActionError extends Error {}
 
 // Type erasure is confined to the registry; each game is checked by defineGame.
 export interface RegisteredGame {
   id: string;
   actionConcurrency: 'strict-revision' | 'game-validated';
-  setup(context: GameContext, config: Json): Transition<unknown, Json>;
+  setup(context: GameSetupContext, config: Json): Transition<unknown, Json>;
   act(state: unknown, action: Json, context: ActionContext): Transition<unknown, Json>;
   tick(state: unknown, timer: Json, context: GameContext): Transition<unknown, Json>;
   project(state: unknown, viewer: Viewer): Json;
@@ -18,14 +20,14 @@ export function defineGame<S, C extends Json, A extends Json, V extends Json, T 
     setup: (context, config) => game.setup(context, game.configSchema.parse(config)),
     act: (state, action, context) => {
       const result = game.handleAction(structuredClone(state) as S, game.actionSchema.parse(action), context);
-      if (!result.accepted) throw new Error(result.reason);
+      if (!result.accepted) throw new GameActionError(result.reason);
       return result.transition;
     },
     tick: (state, timer, context) => game.handleTimer(structuredClone(state) as S, timer as T, context),
     project: (state, viewer) => game.viewSchema.parse(game.project(structuredClone(state) as S, viewer)),
   };
 }
-export interface ActiveGame { id: string; type: string; state: unknown }
+export interface ActiveGame { id: string; type: string; state: unknown; sourcePackId?: string }
 export class Engine {
   private readonly definitions = new Map<string, RegisteredGame>();
   constructor(games: readonly RegisteredGame[] = []) {
@@ -39,7 +41,7 @@ export class Engine {
     if (!game) throw new Error('Jeu inconnu.');
     return game;
   }
-  start(type: string, config: Json, context: GameContext): { game: ActiveGame; transition: Transition<unknown, Json> } {
+  start(type: string, config: Json, context: GameSetupContext): { game: ActiveGame; transition: Transition<unknown, Json> } {
     const transition = this.definition(type).setup(context, config);
     this.validateEffects(transition.effects);
     return { game: { id: randomUUID(), type, state: transition.state }, transition };

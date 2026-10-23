@@ -170,3 +170,33 @@ La [fiche de recette](RECETTE.md) décrit la préparation du build local, l’ab
 Le scénario de deux parties existant est renforcé sans ajouter de fonctionnalité ni dépendance : les quatre contextes indépendants bloquent les requêtes HTTP externes dès le chargement et vérifient l’absence de ressources/WebSockets externes. Les tests de QR, délais réels et reconnexions restent conservés dans la suite. Ce contrôle distingue explicitement l’automatisation Chromium de la recette physique.
 
 Vérifications du 23 octobre 2026 sur la branche R9 : `pnpm check` réussi (36 tests Vitest, lint, typage strict et compilation), `pnpm test:e2e` réussi (64 tests Chromium bureau/mobile, 3 minutes). Liens locaux des documents modifiés et `git diff --check` vérifiés. Aucun défaut bloquant observé dans ces scénarios automatisés ; aucune validation physique effectuée.
+
+# Chapitres suivants — plan validé le 23 octobre 2026
+
+Conserver R0–R9 comme historique, sans clôturer la recette matérielle. Ordre validé : design, catalogue/contenus, Qui de nous ?, Menteur, Images, Dessin. Les règles de référence sont dans [GAMES.md](GAMES.md).
+
+| ID | Livraison | Dépendances | Acceptation |
+| --- | --- | --- | --- |
+| C1 | Formes/couleurs dans l’atelier et le quiz | Socle | Correspondance TV/téléphone, accessibilité et partie complète inchangée. |
+| C2 | Lobby hôte animé | C1 | 0–12 téléphones connectés, reprise, mouvement réduit, QR conservé. |
+| C3 | Catalogue des jeux disponibles | C1 | Lancement du quiz sans régression. |
+| C4 | Packs temporaires et premier vote social | C3 | Import ZIP et une question jouable. |
+| C5 | Qui de nous ? complet | C4 | Manches automatiques, votes détaillés, égalités, classement, replay. |
+| C6 | Menteur, invention et vote | C5 | Anonymat, doublons, vote pour soi interdit, une manche. |
+| C7 | Menteur complet et packs | C6 | Partie automatique, scores, interruptions, replay. |
+| C8 | Images locales et première manche | C5 | Import d’assets, quatre choix, score autoritaire. |
+| C9 | Images, banques et partie complète | C8 | 30 illustrations originales : jeux, films, pays ; classement. |
+| C10 | Choix privé du mot et tracé partagé | C7 + C9 | Dessin tactile, effacement, reprise, confidentialité. |
+| C11 | Dessin complet et import de mots | C10 | Reconnaissance privée, scores, rotation, partie automatique. |
+| C12 | Recette des quatre jeux | C5 + C7 + C9 + C11 | TV/téléphones physiques, sans WAN, imports, interruptions, replay. |
+
+Statuts d’implémentation et résultats seront consignés à mesure de la livraison ; une simulation navigateur ne remplace pas C12.
+
+
+## Livraison C1–C11
+
+**Implémentés et vérifiés automatiquement.** La grille symbolique est partagée entre quiz et images ; l’atelier propose deux/quatre choix et 0/1/6/12 participants. Le lobby hôte conserve son QR et sa liste, avec les téléphones actifs autour du moniteur. Les quatre nouveaux jeux, leurs paramètres, leur bibliothèque ZIP temporaire et leurs modèles sont jouables ; les banques intégrées comprennent 20 questions sociales, 20 de bluff, 30 illustrations originales et 40 mots.
+
+Vérifications : `pnpm check` réussi (57 tests Vitest, lint, typage strict, compilation) et suite complète `pnpm test:e2e` réussie (88 tests Chromium bureau/mobile, 7,2 minutes, sans retry). Chaque nouveau jeu termine deux parties par les interfaces réelles. Les contrôles couvrent également import, modèles ZIP, scores, confidentialité, progression automatique sans intervention, effacement et pixels du dessin, restauration, douze participants et réduction des animations. Le quiz historique et ses tests de coupure/reprise restent conservés.
+
+**C12 : préparation livrée, recette physique en attente.** Suivre [RECETTE-JEUX.md](RECETTE-JEUX.md). Les profils mobiles émulés et douze contextes navigateur ne démontrent pas le fonctionnement de douze appareils sur le Wi-Fi de la soirée. R9 reste également ouverte. Les captures de contrôle des interfaces ont été inspectées ; aucune validation matérielle n’est déclarée à leur place.

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { PartyPanel } from '@/features/games/PartyPanel';
 import { QuizPanel } from '@/features/quiz/QuizPanel';
 import { readInviteCode } from '@/features/rooms/invite';
 import { RoomInvite } from '@/features/rooms/RoomInvite';
@@ -127,9 +128,9 @@ export function PlayerJoinPage() {
         <Card className="player-room-card"><span>Code de la room</span><output data-testid="room-code">{room.code}</output></Card>
         <PlayersList players={room.players} viewerId={room.viewer.sessionId} />
         </>}
-        {room.game && <QuizPanel key={room.game.id} snapshot={room} ready={ready} getClient={() => client.current} />}
+        {room.game && (room.game.type === 'quiz' ? <QuizPanel key={room.game.id} snapshot={room} ready={ready} getClient={() => client.current} /> : <PartyPanel snapshot={room} ready={ready} getClient={() => client.current} />)}
         <RoomExit key={room.roomId} role="player" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); lastRequest.current = null; setCode(''); setName(''); }} />
-        {!room.game && <p className="player-wait-note">Installez-vous, la room est prête. L’hôte peut lancer le quiz.</p>}
+        {!room.game && <p className="player-wait-note">Installez-vous, la room est prête. L’hôte peut choisir et lancer un jeu.</p>}
       </section> : snapshot ? <section className="player-join">
         <h1>Cet onglet est <span>l’hôte.</span></h1>
         <p className="player-intro">Utilisez votre téléphone pour rejoindre comme joueur.</p>

@@ -207,3 +207,37 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
   .player-join-options .room-invite { flex-direction: column; gap: 16px; margin: 0; text-align: center; }
   .player-join-options .room-invite-details { width: 100%; }
 }
+
+:root { --choice-a: var(--pink); --choice-b: var(--cyan); --choice-c: var(--warning); --choice-d: var(--success); --choice-ink: var(--background); }
+.choice-color-0 { color: var(--choice-a); }.choice-color-1 { color: var(--choice-b); }.choice-color-2 { color: var(--choice-c); }.choice-color-3 { color: var(--choice-d); }
+.choice-mark { display: inline-flex; flex-shrink: 0; }.choice-mark svg { width: 30px; height: 30px; }
+.quiz-symbol-button { justify-content: center; min-height: 136px; border: 3px solid transparent; position: relative; }
+.quiz-symbol-button .choice-mark { color: var(--choice-ink); }.quiz-symbol-button .choice-mark svg { width: 54px; height: 54px; }
+.choice-background-0 { background: var(--choice-a); }.choice-background-1 { background: var(--choice-b); }.choice-background-2 { background: var(--choice-c); }.choice-background-3 { background: var(--choice-d); }
+.quiz-symbol-button[aria-pressed=true] { outline: 3px solid var(--foreground); outline-offset: 4px; }.quiz-symbol-button[aria-pressed=true]::after { content: '✓'; position: absolute; right: 12px; top: 8px; color: var(--choice-ink); font-size: 24px; }
+.quiz-symbol-button:disabled { opacity: .65; }.quiz-symbol-button[aria-pressed=true]:disabled { opacity: 1; }
+.connected-orbit { text-align: center; margin: 24px auto; }.connected-orbit p { color: var(--muted-foreground); font-size: 14px; }
+.connected-orbit-scene { width: 310px; max-width: 100%; height: 310px; margin: auto; position: relative; display: grid; place-items: center; }
+.orbit-monitor { width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--border); background: var(--background); color: var(--primary); display: grid; place-items: center; }
+.orbit-traveller { position: absolute; inset: 50%; width: 0; height: 0; transform: rotate(var(--angle)); animation: orbit-travel 50s linear infinite; --radius: 98px; }
+.orbit-ring-1 { --radius: 140px; animation-direction: reverse; }
+.orbit-upright { position: absolute; left: var(--radius); display: grid; place-items: center; transform: rotate(calc(-1 * var(--angle))); animation: orbit-counter 50s linear infinite; }.orbit-ring-1 .orbit-upright { animation-direction: reverse; }
+.orbit-phone { display: grid; place-items: center; width: 38px; height: 46px; margin: -23px -19px; border: 1px solid var(--border); border-radius: 10px; background: var(--elevated); color: var(--cyan); animation: phone-sway 4s ease-in-out var(--delay) infinite alternate; }
+@keyframes orbit-travel { from { transform: rotate(var(--angle)); } to { transform: rotate(calc(var(--angle) + 360deg)); } }
+@keyframes orbit-counter { from { transform: rotate(calc(-1 * var(--angle))); } to { transform: rotate(calc(-1 * var(--angle) - 360deg)); } }
+@keyframes phone-sway { from { rotate: -10deg; } to { rotate: 10deg; } }
+@media(prefers-reduced-motion:reduce) { .orbit-traveller,.orbit-upright,.orbit-phone { animation: none; } }
+
+.game-catalogue { padding: 28px; margin: 24px auto; max-width: 1040px; text-align: left; }.game-catalogue h2 { font-size: 28px; }.game-picker,.party-options { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); margin: 20px 0; }.game-picker [aria-pressed=true] { border-color: var(--primary); }.game-catalogue p,.party-panel p { line-height: 1.8; color: var(--muted-foreground); }.game-configuration { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); margin: 24px 0; }.game-catalogue details { margin-top: 28px; border-top: 1px solid var(--border); padding-top: 20px; }.game-catalogue details ul { list-style: none; padding: 0; }.game-catalogue details li { margin: 14px 0; }.game-catalogue input[type=file] { display: block; margin: 16px 0; max-width: 100%; }.party-panel { max-width: 1000px; margin: 32px auto; text-align: left; }.party-panel h1 { font-size: clamp(26px,4vw,46px); }.party-panel form { display: grid; gap: 16px; margin: 24px 0; }.party-options .button { white-space: normal; min-height: 64px; }.question-image { display: block; max-width: 100%; width: min(100%,520px); max-height: 40vh; object-fit: contain; margin: 20px auto; border-radius: 12px; }.drawing-board { display: block; background: white; border-radius: 12px; width: min(100%,520px); aspect-ratio: 1; height: auto; margin: 20px auto; }.drawing-board.can-draw { touch-action: none; cursor: crosshair; }.party-panel strong { color: var(--foreground); }
+:root { --drawing-background: #ffffff; --drawing-ink: #000000; }
+.choice-background-0 { --choice-fill: var(--choice-a); }.choice-background-1 { --choice-fill: var(--choice-b); }.choice-background-2 { --choice-fill: var(--choice-c); }.choice-background-3 { --choice-fill: var(--choice-d); }
+.quiz-choice.quiz-symbol-button,.quiz-choice.quiz-symbol-button:hover,.quiz-choice.quiz-symbol-button[aria-pressed=true] { background: var(--choice-fill); color: var(--choice-ink); }
+.quiz-choice.quiz-symbol-button:hover:not(:disabled) { filter: brightness(1.08); }
+.quiz-choices.symbol-choices,.quiz-player .quiz-choices.symbol-choices { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.quiz-player .quiz-choice.quiz-symbol-button { min-height: 132px; justify-content: center; }
+.drawing-board { background: var(--drawing-background); }
+@media(min-width:900px) { .party-host .image-question-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 28px; align-items: center; }.party-host .question-image { margin: 0 auto; }.party-host .image-question-layout .quiz-choices { margin: 0; } }
+.connected-orbit-scene::before,.connected-orbit-scene::after { content: ''; position: absolute; border: 1px solid var(--border); border-radius: 50%; width: 196px; height: 196px; }
+.connected-orbit-scene::after { width: 280px; height: 280px; }
+.host-code-card .connected-orbit { margin: 10px auto 0; }.host-code-card .connected-orbit-scene { width: 200px; height: 200px; }.host-code-card .orbit-monitor { width: 64px; height: 64px; }.host-code-card .orbit-traveller { --radius: 60px; }.host-code-card .orbit-ring-1 { --radius: 88px; }.host-code-card .orbit-phone { width: 30px; height: 36px; margin: -18px -15px; }.host-code-card .orbit-phone svg { width: 20px; height: 20px; }.host-code-card .connected-orbit-scene::before { width: 120px; height: 120px; }.host-code-card .connected-orbit-scene::after { width: 176px; height: 176px; }.host-code-card .connected-orbit p { margin: 0; font-size: 12px; }
+@media(min-width:1001px) { .host-lobby { padding-top: 20px; }.host-lobby > h1 { font-size: 44px; margin: 16px 0; }.host-lobby > .host-intro { margin-bottom: 16px; }.host-admission { margin: 24px 0; }.host-admission .host-code-card { padding: 20px; } }

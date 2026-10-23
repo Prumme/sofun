@@ -6,7 +6,10 @@ import { Card } from '@/components/ui/card';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { GameCatalogue } from '@/features/games/GameCatalogue';
+import { PartyPanel } from '@/features/games/PartyPanel';
 import { QuizPanel } from '@/features/quiz/QuizPanel';
+import { ConnectedOrbit } from '@/features/rooms/ConnectedOrbit';
 import { RoomInvite } from '@/features/rooms/RoomInvite';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
@@ -123,12 +126,13 @@ export function HostRoomPage() {
           <div className="host-code-label" id="room-code-label">CODE DE LA ROOM</div>
           <output className="host-room-code" aria-labelledby="room-code-label" data-testid="room-code">{room.code}</output>
           <div className="host-code-caption"><Check size={16} aria-hidden="true" /> Room créée sur le serveur local</div>
+          <ConnectedOrbit players={room.players} />
         </Card>
         <RoomInvite code={room.code} />
         </div>
         <PlayersList players={room.players} />
         </>}
-        <QuizPanel key={room.game?.id ?? 'lobby'} snapshot={room} ready={ready} getClient={() => client.current} />
+        {!room.game ? <GameCatalogue ready={ready} playerCount={room.players.length} getClient={() => client.current} /> : room.game.type === 'quiz' ? <QuizPanel key={room.game.id} snapshot={room} ready={ready} getClient={() => client.current} /> : <PartyPanel snapshot={room} ready={ready} getClient={() => client.current} />}
         <RoomExit key={room.roomId} role="host" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); requestId.current = null; }} />
       </section> : snapshot ? <section className="host-welcome">
         <h1>Une session est déjà <span>active.</span></h1>

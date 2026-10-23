@@ -9,6 +9,7 @@ import type { RegisteredGame } from './engine/engine.js';
 
 export async function createApplication(registry?: readonly RegisteredGame[], logger: false | undefined = undefined) {
   const app = await NestFactory.create<NestExpressApplication>(AppModule.register(registry), logger === false ? { logger: false } : {});
+  app.useBodyParser('raw', { type: 'application/zip', limit: '20mb' });
   const webDist = fileURLToPath(new URL('../../web/dist/', import.meta.url));
   if (existsSync(webDist)) {
     app.useStaticAssets(webDist);

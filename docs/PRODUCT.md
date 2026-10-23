@@ -96,3 +96,12 @@ Une seule connexion peut contrôler une session. Une reprise sur une autre conne
 Le lobby affiche un lien et un QR code permettant aux téléphones du même réseau d’ouvrir le formulaire avec le code de room prérempli. Le joueur choisit son pseudo et confirme son admission ; scanner ne crée pas immédiatement de joueur. Le code manuel reste disponible. Un lien invalide est expliqué et corrigeable ; une room fermée n’accepte plus de nouveaux participants.
 
 L’hôte ouvre l’application via l’adresse réseau de l’ordinateur. Si l’application est ouverte via `localhost`, elle invite à utiliser cette adresse avant de partager un QR ou un lien. La disponibilité réelle sur Wi-Fi, le scan depuis une télévision et la compatibilité des appareils restent à vérifier lors de la recette R9.
+
+
+## Nouveaux chapitres validés
+
+Les décisions C1–C12 étendent le premier quiz avec un lobby hôte animé, des réponses symboliques et quatre jeux décrits dans [GAMES.md](GAMES.md). Les phases des nouveaux jeux sont automatiques, les résultats intermédiaires durent dix secondes par défaut, et le classement final attend l’hôte. Le quiz historique conserve ses règles.
+
+Les packs intégrés peuvent être complétés par des ZIP importés depuis l’ordinateur hôte. Leur bibliothèque est temporaire et partagée entre les rooms du même processus ; aucun compte, base de données ou service externe n’est introduit. Le propriétaire a choisi des illustrations originales pour les trente indices d’images. La cible de validation est douze joueurs ; cela ne constitue pas une validation matérielle de douze appareils.
+
+Le lobby animé reste réservé à l’hôte et représente les connexions actives. Les boutons symboliques concernent les jeux à choix fixes ; les noms de joueurs et inventions conservent leur texte. Les sources historiques R1–R9 ci-dessus décrivent leurs livraisons initiales ; l’invitation depuis localhost est désormais prise en charge par la découverte LAN côté serveur.

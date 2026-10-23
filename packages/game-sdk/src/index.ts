@@ -7,6 +7,7 @@ export interface GameContext {
   readonly players: readonly { id: string; name: string }[];
   readonly random: () => number;
 }
+export interface GameSetupContext extends GameContext { readonly content?: Json }
 export interface ActionContext extends GameContext { readonly actor: Viewer }
 export type GameEffect<Timer extends Json> =
   | { type: 'schedule'; key: string; delayMs: number; timer: Timer }
@@ -27,7 +28,7 @@ export interface GameDefinition<State, Config extends Json, Action extends Json,
   readonly configSchema: z.ZodType<Config>;
   readonly actionSchema: z.ZodType<Action>;
   readonly viewSchema: z.ZodType<View>;
-  setup(context: GameContext, config: Config): Transition<State, Timer>;
+  setup(context: GameSetupContext, config: Config): Transition<State, Timer>;
   handleAction(state: Readonly<State>, action: Action, context: ActionContext): ActionResult<State, Timer>;
   handleTimer(state: Readonly<State>, timer: Timer, context: GameContext): Transition<State, Timer>;
   project(state: Readonly<State>, viewer: Viewer): View;

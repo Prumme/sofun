@@ -178,3 +178,31 @@ Le proxy Vite existant relaie cette nouvelle route `/api` ; aucune modification 
 En cas d’échec HTTP, de réponse invalide ou d’absence de réponse pendant cinq secondes, un message propose « Réessayer la détection ». Une liste vide est expliquée séparément. La saisie du code et du pseudo est conservée pendant un nouvel essai. Les tests d’invitation contrôlent uniquement les réponses de découverte pour couvrir une/plusieurs/aucune adresse, erreur et reprise ; les rooms et sessions restent réelles. Les IP simulées ne démontrent pas une connexion physique à ces adresses. Le test HTTP serveur vérifie aussi la vraie route `/api/network`, son schéma et l’absence de cache.
 
 Vérifications de la finalisation du 23 octobre 2026 : `pnpm check` réussi (40 tests Vitest, lint, typage strict et compilation), puis `pnpm test:e2e` réussi (72 tests Chromium bureau/mobile, 3,7 minutes, sans retry). Les liens locaux de la documentation et `git diff --check` sont vérifiés. Le retour positif du propriétaire sur l’essai est consigné dans la fiche de recette ; les autres critères matériels R9 restent à renseigner.
+
+
+## Nouveaux jeux et bibliothèque de contenus
+
+Dans le lobby hôte, choisir un jeu puis un pack et ses paramètres. Les nouveaux jeux progressent automatiquement ; le réglage « Durée des résultats » laisse le temps de lire les votes et les points. Le classement final attend le retour au lobby. Le quiz conserve ses commandes manuelles.
+
+Ouvrir « Bibliothèque de contenus » pour télécharger un modèle ZIP, importer un ZIP ou supprimer un import inutilisé. « Actualiser la bibliothèque » récupère les imports effectués depuis une autre room. La bibliothèque est en mémoire, commune aux rooms, et perdue au redémarrage. Un pack utilisé par une partie, même au classement final, ne peut pas être supprimé. Revenir au lobby pour le libérer.
+
+### Créer un pack
+
+Le ZIP contient `manifest.json` à sa racine et, pour les images, un dossier `images/`. Les modèles téléchargeables sont directement réimportables. Ne pas ajouter de dossier parent, de `.DS_Store`, d’archive imbriquée ou de fichiers non référencés. Un message indique les entrées ou champs invalides ; aucun pack partiel n’est ajouté.
+
+Tous les manifestes contiennent `version: 1`, `game` (`who`, `liar`, `images` ou `drawing`), `title` et `items` :
+
+- `who` : `{ "question": "Qui arriverait en retard ?" }`.
+- `liar` : `{ "question": "Combien font deux plus deux ?", "truth": "Quatre", "aliases": ["4"] }`.
+- `images` : `{ "question": "Quel lieu ?", "image": "images/lieu.png", "choices": ["A", "B", "C", "D"], "correctIndex": 0 }`.
+- `drawing` : `{ "word": "vélo", "aliases": ["bicyclette"] }`.
+
+JPEG, PNG et WebP sont acceptés, avec contrôle de signature et extension. Limites : ZIP 20 Mio, contenu décompressé 50 Mio, manifest 1 Mio, bibliothèque importée 200 Mio. Les champs inconnus et chemins sortants sont refusés. Le jeu de dessin nécessite au moins `joueurs × tours + 2` mots pour proposer trois choix sans répéter les mots déjà dessinés ; le catalogue désactive le lancement si le pack est insuffisant.
+
+L’hôte administre les packs via ses credentials de session dans des en-têtes HTTP, jamais dans l’URL. Ne pas partager ces credentials. Les autres joueurs ne disposent pas des opérations d’import/suppression. Les projections ne montrent les solutions et les auteurs qu’à la révélation ; le mot du dessin n’est envoyé qu’au dessinateur avant celle-ci.
+
+### Illustration et tests
+
+Les 30 images sont des indices stylisés originaux, pas des captures ou photographies. Leurs SVG, PNG et table de réponses restent dans les sources privées du serveur. La génération est reproductible, après installation de Chromium : `node scripts/generate-game-art.mjs`. Ces assets sont déjà versionnés ; cette commande n’est pas nécessaire pour lancer une soirée. Conserver le dossier `apps/server/src/content/art/` avec le checkout utilisé par `pnpm start`.
+
+Après compilation : `pnpm exec playwright test party-games lobby-design`. La suite joue deux parties de chaque nouveau jeu avec des contextes isolés, importe des packs, télécharge les modèles, vérifie les scores et les pixels du dessin, puis teste le lobby et le dessin avec douze participants. Les durées minimales réelles des résultats sont conservées ; aucun serveur de développement n’est réutilisé. Les tests unitaires contrôlent aussi la progression automatique sans réponses et les limites de ressources. La recette matérielle est dans [RECETTE-JEUX.md](RECETTE-JEUX.md).
