@@ -42,6 +42,17 @@ describe('realtime client', () => {
     await vi.waitFor(() => expect(onStatus).toHaveBeenLastCalledWith('ready'));
     expect(onConnection).toHaveBeenLastCalledWith(true);
   });
+  it('clears expired credentials and notifies the interface after a failed resume', async () => {
+    storage.set('party-games.session', JSON.stringify({ roomId: randomUUID(), sessionId: randomUUID(), token: 'a'.repeat(64) }));
+    transport.socket.emitWithAck.mockImplementation((_name: string, data: { requestId: string }) => Promise.resolve({ ok: false, requestId: data.requestId, error: { code: 'INVALID_SESSION', message: 'Session invalide.' } }));
+    const onSessionLost = vi.fn(), onStatus = vi.fn(), onError = vi.fn();
+    createRealtimeClient(() => {}, undefined, { onSessionLost, onStatus, onError });
+    connect();
+    await vi.waitFor(() => expect(onSessionLost).toHaveBeenCalledOnce());
+    expect(storage.has('party-games.session')).toBe(false);
+    expect(onStatus).toHaveBeenLastCalledWith('ready');
+    expect(onError).toHaveBeenCalledWith('Cette session n’est plus disponible. Vous pouvez recommencer.');
+  });
   it('does not restore host credentials when opening the design workshop', () => {
     storage.set('party-games.session', JSON.stringify({ roomId: randomUUID(), sessionId: randomUUID(), token: 'a'.repeat(64) }));
     const onConnection = vi.fn();

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
 type Client = ReturnType<typeof createRealtimeClient>;
@@ -33,12 +34,14 @@ export function HostRoomPage() {
     const connection = createRealtimeClient(() => {}, view => {
       latestSnapshot.current = view;
       if (view.phase === 'closed') {
+        latestSnapshot.current = null;
+        requestId.current = null;
         setSnapshot(null);
         setError('Cette room a été fermée.');
       } else if (!pending.current) {
         setSnapshot(view);
       }
-    }, { onStatus: setStatus, onError: setError });
+    }, { onStatus: setStatus, onError: setError, onSessionLost: () => { latestSnapshot.current = null; setSnapshot(null); requestId.current = null; } });
     client.current = connection;
     connection.connect();
     return () => {
@@ -119,6 +122,7 @@ export function HostRoomPage() {
         </Card>
         <div className="host-join-instructions"><p>Sur votre téléphone, ouvrez cette application et choisissez <strong>« Rejoindre une room »</strong>.</p></div>
         <PlayersList players={room.players} />
+        <RoomExit key={room.roomId} role="host" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); requestId.current = null; }} />
       </section> : snapshot ? <section className="host-welcome">
         <h1>Une session est déjà <span>active.</span></h1>
         <p className="host-intro">Cet onglet est associé à un joueur. La création d’une room nécessite un autre onglet sans session active.</p>

@@ -97,4 +97,14 @@ L’accueil propose « Rejoindre une room » et le formulaire `/join` utilise la
 
 L’hôte et les participants partagent un composant de liste, alimenté par leurs instantanés respectifs ; chaque joueur repère sa propre entrée. Les tests utilisent des contextes hôte/joueurs indépendants, avec admissions simultanées et deux rooms distinctes. Aucun changement du backend, du protocole ou des dépendances n’est nécessaire.
 
-La prochaine tâche est R3 : recharger, quitter et fermer une room. Les objectifs et dépendances métier de R3 à R9 restent inchangés.
+R3 complète désormais le cycle de vie du lobby. Les objectifs et dépendances métier de R3 à R9 restent inchangés.
+
+## Livraison R3
+
+**Statut : implémentée et vérifiée.** `pnpm check` réussi (18 tests Vitest, lint, typage strict et builds). Après compilation, `pnpm exec playwright test` réussit les 40 tests bureau/mobile ; deux passages complets ont validé les nouveaux scénarios réseau, puis le dernier inclut aussi la fermeture des rooms R1/R2 via l’interface. Les captures de confirmation ont été inspectées. La recette physique reste R9.
+
+Rechargement et reconnexion dans le même onglet conservent l’identité sans doublon. Les joueurs quittent volontairement le lobby, puis peuvent rejoindre à nouveau. L’hôte dispose d’une fermeture confirmée, communiquée aux participants, puis peut créer une nouvelle room. Une session périmée supprime la vue locale et propose à nouveau création ou admission. En cas de confirmation de départ perdue, une vérification explicite de session permet de retrouver l’état réel. Aucun changement du backend, des contrats ou des dépendances.
+
+Les scénarios Playwright multicontextes couvrent reprise, présence hors ligne, départ et réadmission, annulation et fermeture collective, identifiants invalides, session devenue périmée hors ligne et accusé perdu.
+
+Prochaine étape : R4, jouer une première question de quiz selon les règles de cette roadmap. Les objectifs et dépendances métier de R4 à R9 restent inchangés ; la recette matérielle reste R9.

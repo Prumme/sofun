@@ -7,6 +7,7 @@ import { clearCredentials, readCredentials, saveCredentials } from '../session/s
 export type ConnectionStatus = 'connecting' | 'restoring' | 'ready' | 'offline' | 'error';
 interface ClientOptions {
   resumeSession?: boolean;
+  onSessionLost?: () => void;
   onStatus?: (status: ConnectionStatus) => void;
   onError?: (message: string) => void;
 }
@@ -35,7 +36,10 @@ export function createRealtimeClient(
   socket.on('connect', () => {
     const currentGeneration = ++generation;
     const credentials = options.resumeSession === false ? null : readCredentials();
-    if (!credentials) { status('ready'); return; }
+    if (!credentials) {
+      if (options.resumeSession !== false) clearCredentials();
+      status('ready'); return;
+    }
     status('restoring');
     // No pending business intent is replayed on reconnect.
     void send('session:resume', { requestId: createRequestId(), ...credentials }).then(response => {
@@ -43,6 +47,7 @@ export function createRealtimeClient(
       if (!response.ok) {
         if (['INVALID_SESSION', 'ROOM_NOT_FOUND'].includes(response.error.code)) {
           clearCredentials();
+          options.onSessionLost?.();
           options.onError?.('Cette session n’est plus disponible. Vous pouvez recommencer.');
           status('ready');
         } else {

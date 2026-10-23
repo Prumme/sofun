@@ -149,3 +149,6 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 .player-lobby .room-players h2 { font-size: 20px; }
 .player-wait-note { color: var(--muted-foreground); font-size: 13px; margin-top: 28px; }
 @media(max-width:600px) { .host-actions .button { width: 100%; }.player-form-card { padding: 22px; }.players-list li { gap: 10px; padding: 15px 14px; }.player-identity { font-size: 14px; gap: 6px; }.player-presence { font-size: 11px; }.host-join-instructions { font-size: 13px; } }
+
+.room-exit { margin-top: 28px; }
+.room-exit p { color: var(--muted-foreground); margin-bottom: 16px; }
