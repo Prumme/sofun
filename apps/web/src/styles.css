@@ -7,6 +7,8 @@
   --card: #151827;
   --card-foreground: #f5f6fa;
   --elevated: #1d2133;
+  --qr-background: #ffffff;
+  --qr-foreground: #000000;
   --muted-foreground: #a5a9be;
   --border: #303449;
   --primary: #a855f7;
@@ -183,3 +185,18 @@ footer { border-top:1px solid var(--border); padding:25px 0 35px; display:flex; 
 
 .quiz-countdown { display: flex; align-items: center; gap: 16px; color: var(--muted-foreground); margin: 20px 0; }
 .quiz-countdown [role=timer] { color: var(--foreground); font-size: 28px; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.room-invite { display: flex; align-items: center; gap: 28px; max-width: 820px; margin: 28px auto; text-align: left; }
+.room-invite-qr { background: var(--qr-background); padding: 8px; border-radius: 12px; flex-shrink: 0; }
+.room-invite-qr svg { display: block; max-width: 100%; height: auto; }
+.room-invite-details { min-width: 0; }
+.room-invite-details p { color: var(--muted-foreground); font-size: 15px; line-height: 1.7; }
+.room-invite-link { display: block; overflow-wrap: anywhere; color: var(--primary); font-size: 18px; line-height: 1.7; margin: 12px 0; text-decoration: underline; }
+@media(max-width: 640px) { .room-invite { flex-direction: column; align-items: center; gap: 16px; } .room-invite-details { width: 100%; } }
+
+.host-admission { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 28px; align-items: stretch; margin: 32px 0; }
+.host-admission .host-code-card { margin: 0; max-width: none; display: flex; flex-direction: column; justify-content: center; }
+.host-admission .host-room-code { font-size: clamp(36px, 5.5vw, 72px); }
+.host-admission .room-invite { margin: 0; gap: 20px; }
+.host-admission .host-join-instructions { margin: auto 0; }
+@media(max-width: 1000px) { .host-admission { grid-template-columns: 1fr; } .host-admission .host-code-card { padding: 28px; } .host-admission .room-invite { justify-content: center; } }

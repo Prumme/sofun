@@ -9,7 +9,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », puis saisir le code et un pseudo. L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; le cycle de vie du lobby et le quiz complet de cinq questions sont disponibles.
+L’accueil `/` permet de créer une room ou d’ouvrir le formulaire joueur `/join`. Sur chaque téléphone du même réseau, ouvrir l’URL LAN de l’application, choisir « Rejoindre une room », ou scanner le QR / ouvrir le lien du lobby hôte, puis saisir un pseudo (le code est prérempli via le lien). L’hôte et les participants voient la même liste actualisée par le vrai serveur Socket.IO. Les boutons attendent une connexion prête et sont désactivés pendant les requêtes ; les échecs sont signalés. L’atelier est conservé sur `/design` ; le cycle de vie du lobby et le quiz complet de cinq questions sont disponibles.
 
 ## Réseau local
 
@@ -152,3 +152,11 @@ Le scénario de partie complète conserve deux parties de cinq questions ; la se
 Le test de remplacement copie explicitement les credentials produits dans le scénario vers un autre contexte éphémère pour modéliser deux connexions revendiquant la même identité. Cette copie est limitée à ce test ; elle ne modifie pas la fixture d’isolation ni la politique de stockage du produit. L’ancien écran est désactivé ; le nouvel écran conserve réponse et score. Une reprise explicite peut reprendre le contrôle, sans boucle automatique entre les connexions.
 
 Le test d’intention retardée retient une vraie trame `game:action`, laisse l’hôte révéler et avancer, puis transmet la trame d’origine au vrai serveur. Elle est refusée pour la nouvelle question ; la réponse valide à cette dernière reste possible et son résultat est affiché sans erreur obsolète. Aucun succès ni instantané n’est fabriqué. Commande ciblée après compilation : `pnpm exec playwright test quiz-reconnection`. La suite complète continue de jouer deux parties en R5/R6.
+
+### Invitations locales (R8)
+
+Sur l’ordinateur hôte, ouvrir l’URL LAN affichée par `pnpm dev`, ou `http://ADRESSE_LAN:3000` pour le build compilé. Le lobby expose ensuite son lien `/join?code=...` et son QR. L’origine et le port proviennent de la page ouverte ; ne pas utiliser `localhost` pour un lien destiné à un téléphone. Le lobby explique ce point et masque le lien/QR si l’origine est une boucle locale ou une adresse d’écoute générique. Aucun endpoint de découverte LAN n’est ajouté.
+
+`tests/e2e/room-invite.spec.ts` utilise le nom `party-games.test` résolu vers la boucle locale par Chromium uniquement dans ce fichier de tests. Les acteurs restent des contextes indépendants, le vrai serveur mémoire est réutilisé et aucun DNS/service externe n’est requis. La configuration Playwright générale est inchangée. Les tests décodent le SVG réellement rendu avec `jsqr` (développement uniquement), vérifient l’URL, puis pilotent l’admission de deux téléphones par le formulaire. Ils couvrent aussi les paramètres invalides, le lien d’une room fermée et le repli vers la saisie manuelle en boucle locale. Les tests unitaires vérifient notamment IPv4 LAN, IPv6, noms d’hôte et ports.
+
+Après compilation : `pnpm exec playwright test room-invite`. Pour la vérification physique R9, afficher le lobby sur la TV, scanner avec deux téléphones du même Wi-Fi, vérifier le code prérempli et rejoindre avec deux pseudos. Vérifier aussi le lien textuel et le parcours manuel. Le décodage automatisé ne remplace pas cette vérification de caméra, distance, réseau et pare-feu.

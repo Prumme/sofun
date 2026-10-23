@@ -7,6 +7,7 @@ import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
 import { QuizPanel } from '@/features/quiz/QuizPanel';
+import { RoomInvite } from '@/features/rooms/RoomInvite';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
 
@@ -117,12 +118,14 @@ export function HostRoomPage() {
         <div className="eyebrow"><span className="line" /> VOTRE SOIRÉE COMMENCE ICI</div>
         <h1 id="lobby-title">Votre room est <span>prête.</span></h1>
         <p className="host-intro">Gardez cet écran ouvert sur l’ordinateur ou la télévision.</p>
+        <div className="host-admission">
         <Card className="host-code-card">
           <div className="host-code-label" id="room-code-label">CODE DE LA ROOM</div>
           <output className="host-room-code" aria-labelledby="room-code-label" data-testid="room-code">{room.code}</output>
           <div className="host-code-caption"><Check size={16} aria-hidden="true" /> Room créée sur le serveur local</div>
         </Card>
-        <div className="host-join-instructions"><p>Sur votre téléphone, ouvrez cette application et choisissez <strong>« Rejoindre une room »</strong>.</p></div>
+        <RoomInvite code={room.code} />
+        </div>
         <PlayersList players={room.players} />
         </>}
         <QuizPanel key={room.game?.id ?? 'lobby'} snapshot={room} ready={ready} getClient={() => client.current} />

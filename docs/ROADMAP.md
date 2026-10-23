@@ -147,4 +147,16 @@ Les reprises retrouvent l’état autoritaire de la partie : bonne question, ré
 
 Le serveur possédait déjà les gardes nécessaires : R7 conserve les services, les contrats et le moteur, isole les contrôles asynchrones du quiz par question/phase/connexion et ajoute des tests multiclients de coupure, retour après changement de question, échéance sans hôte et remplacement de connexion.
 
-Prochaine étape : R8, lien d’admission et QR code utilisant l’origine LAN. Les objectifs et dépendances de R8/R9 restent inchangés ; la recette physique complète reste R9.
+R8 ajoute désormais le lien d’admission et le QR code utilisant l’origine de l’application. Les objectifs et dépendances de R8/R9 restent inchangés ; la recette physique complète reste R9.
+
+## Livraison R8
+
+**Statut : implémentée et vérifiée automatiquement.** `pnpm check` réussi (36 tests Vitest, lint, typage strict et builds), 6 scénarios d’invitation ciblés réussis, puis `pnpm test:e2e` réussi (64 tests bureau/mobile). Le QR rendu a été décodé et son lien utilisé pour l’admission réelle de deux joueurs. Code et QR sont entièrement visibles dans le viewport hôte ; la capture a été inspectée. Le scan sur appareils physiques reste à effectuer ci-dessous.
+
+Le lobby présente un lien d’admission et un QR généré localement depuis l’origine ouverte par l’hôte, avec le code public uniquement. Le téléphone retrouve ce code dans le formulaire et choisit son pseudo avant d’entrer. Code malformé ou paramètres répétés sont expliqués ; une room fermée reste refusée. Le code manuel reste disponible, et une origine de boucle locale affiche une indication pour ouvrir l’adresse réseau au lieu de proposer un lien inutilisable sur téléphone.
+
+Les tests décodent le QR réellement rendu et rejoignent la room avec deux contextes indépendants. Ils vérifient les ports/origines LAN, les liens invalides et fermés, et le repli localhost. L’encodeur QR est local au frontend ; le décodeur est réservé aux tests. Aucun changement du backend ou de ses contrats.
+
+**Vérification physique encore à effectuer :** scanner le QR affiché sur une télévision depuis de vrais smartphones du même réseau. Le décodage automatisé et l’admission navigateur seront consignés séparément de cette recette.
+
+Prochaine étape : R9, recette locale complète sur ordinateur/TV et deux smartphones, avec scan, partie complète, interruptions et seconde partie. Ses objectifs et dépendances restent inchangés.

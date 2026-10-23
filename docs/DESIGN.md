@@ -307,3 +307,7 @@ Cette page doit présenter les boutons, les cartes de jeux, les icônes et les c
 Vérifier la lisibilité sur écran partagé et sur smartphone, les contrastes, les zones tactiles et le respect de `prefers-reduced-motion`.
 
 Cette démonstration servira à valider les tokens, les variantes et la cohérence du design system avant de décliner toutes les pages. Les couleurs, polices et associations propres aux jeux encore présentées comme des propositions restent à valider.
+
+## 14. Admission par QR code
+
+Le QR de room reste noir sur fond blanc, avec une marge de lecture de quatre modules, sans halo ni décoration sur les modules. Ses couleurs sont centralisées dans les tokens `--qr-background` et `--qr-foreground`. Sur écran hôte large, le code manuel et le QR sont présentés côte à côte ; les petits écrans empilent ces informations. Le lien textuel et la saisie manuelle constituent les alternatives au scan. Vérifier le scan réel depuis la télévision lors de R9.

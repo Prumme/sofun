@@ -90,3 +90,9 @@ L’hôte peut toujours écourter une question avec « Révéler la réponse ».
 Un joueur qui recharge ou retrouve le réseau revient sur la question actuelle avec sa réponse déjà enregistrée et ses points conservés. Si la question a changé pendant son absence, il voit la nouvelle question ; sa réponse précédente ne vaut pas pour celle-ci. Le temps continue pendant une interruption de l’hôte ; son retour retrouve l’état réel, y compris une révélation déjà survenue.
 
 Une seule connexion peut contrôler une session. Une reprise sur une autre connexion désactive l’écran précédent, qui affiche un message et permet une reprise explicite. Cela ne crée pas de nouveau joueur. Les requêtes encore en attente d’une ancienne question ne bloquent pas la suivante. Les limites de reprise dans le même onglet et de stockage en mémoire restent inchangées.
+
+## Admission par lien ou QR — R8
+
+Le lobby affiche un lien et un QR code permettant aux téléphones du même réseau d’ouvrir le formulaire avec le code de room prérempli. Le joueur choisit son pseudo et confirme son admission ; scanner ne crée pas immédiatement de joueur. Le code manuel reste disponible. Un lien invalide est expliqué et corrigeable ; une room fermée n’accepte plus de nouveaux participants.
+
+L’hôte ouvre l’application via l’adresse réseau de l’ordinateur. Si l’application est ouverte via `localhost`, elle invite à utiliser cette adresse avant de partager un QR ou un lien. La disponibilité réelle sur Wi-Fi, le scan depuis une télévision et la compatibilité des appareils restent à vérifier lors de la recette R9.
