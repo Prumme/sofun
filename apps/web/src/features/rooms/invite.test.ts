@@ -7,6 +7,9 @@ describe('room admission links', () => {
     expect(buildInviteUrl('http://[fd00::12]:3000', 'ABC234')).toBe('http://[fd00::12]:3000/join?code=ABC234');
     expect(buildInviteUrl('https://party.local:4443/other?token=secret#private', 'ABC234')).toBe('https://party.local:4443/join?code=ABC234');
   });
+  it('opens the player form without requiring a room code or sharing other data', () => {
+    expect(buildInviteUrl('http://192.168.1.12:5174/private?token=secret#hidden')).toBe('http://192.168.1.12:5174/join');
+  });
   it('does not invite phones to loopback or wildcard addresses', () => {
     for (const origin of ['http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.2.3.4:3000', 'http://[::1]:3000', 'http://0.0.0.0:3000', 'http://[::]:3000', 'http://room.localhost:3000', 'ftp://192.168.1.12']) expect(buildInviteUrl(origin, 'ABC234')).toBeNull();
   });
