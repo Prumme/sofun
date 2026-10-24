@@ -63,8 +63,8 @@ test('liar keeps inventions anonymous, refuses duplicates and own votes, scores 
   }await closeRoom(host.page);
 });
 
-test('image ZIP renders local assets, ranks correct answers and plays two complete automatic games',async({createActors})=>{
-  test.setTimeout(120_000);const {host,players}=await createActors(2);const code=await createRoom(host.page);for(const[i,p]of players.entries())await joinRoom(p.page,code,['Alice','Benoît'][i]!);
+test('image ZIP renders local assets, ranks correct answers and plays two complete automatic games',async({createActors},testInfo)=>{
+  test.setTimeout(120_000);const {host,players}=await createActors(2);await players[0]!.page.setViewportSize({width:320,height:740});const code=await createRoom(host.page);for(const[i,p]of players.entries())await joinRoom(p.page,code,['Alice','Benoît'][i]!);
   const title=`Visuel-${randomUUID()}`;await host.page.getByRole('button',{name:'D’où provient cette image ?',exact:true}).click();const png=readFileSync(new URL('../../apps/server/src/content/art/scene-01.png',import.meta.url));
   await importPack(host.page,title,'images',[0,1].map(i=>({question:`Image ${i}`,image:'images/illustration.png',choices:[`Vrai ${i}`,'Faux A','Faux B','Faux C'],correctIndex:0})),{'images/illustration.png':png});
   for(let game=0;game<2;game++){
@@ -74,6 +74,15 @@ test('image ZIP renders local assets, ranks correct answers and plays two comple
       await expect.poll(()=>host.page.getByRole('img',{name:'Illustration à identifier'}).evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);
       for(const player of players){const button=player.page.getByRole('button',{name:new RegExp(`^[A-D] Vrai ${index}$`)});await expect(button).not.toContainText('Vrai');await button.click();await expect(button).toBeDisabled();}
       await expect(host.page.getByRole('list',{name:'Scores de la manche'}).locator('strong')).toHaveText([`${1000*(round+1)} points`,`${500*(round+1)} points`]);
+      for(const page of [host.page,...players.map(player=>player.page)]) {
+        await expect(page.getByRole('timer',{name:'Temps restant'})).toBeVisible();
+        await expect(page.getByText(round===1?'Classement final dans':'Prochaine manche dans',{exact:true})).toBeVisible();
+        const gainLines = await page.locator('.party-score-gain').evaluateAll(elements=>elements.map(element=>{const range=document.createRange();range.selectNodeContents(element);const rects=Array.from(range.getClientRects()).filter(rect=>rect.width>0&&rect.height>0);return {text:element.textContent, tops:rects.map(rect=>rect.top), fontSize:parseFloat(getComputedStyle(element).fontSize)};}));
+        expect(gainLines.every(gain=>gain.tops.length>0&&Math.max(...gain.tops)-Math.min(...gain.tops)<gain.fontSize/2),JSON.stringify(gainLines)).toBe(true);
+        expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+        expect(await page.getByRole('timer',{name:'Temps restant'}).evaluate(element=>parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(36);
+      }
+      if(game===0&&round===0){await host.page.screenshot({path:testInfo.outputPath('results-host.png'),fullPage:true});await players[0]!.page.screenshot({path:testInfo.outputPath('results-player-320.png'),fullPage:true});}
     }await finalAndReturn(host.page,players.map(p=>p.page));
   }await closeRoom(host.page);
 });

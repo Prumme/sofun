@@ -5,6 +5,7 @@ import type { createRealtimeClient } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
 import { Button } from '@/components/ui/button';
 import { ChoiceGrid } from './ChoiceGrid';
+import { PhaseTimer } from './PhaseTimer';
 import { DrawingBoard } from './DrawingBoard';
 export interface PartyProps { snapshot: Snapshot; ready: boolean; getClient: () => ReturnType<typeof createRealtimeClient> | null }
 type View = WhoView | LiarView | ImagesView | DrawingView;
@@ -33,11 +34,11 @@ function PartyControls({ snapshot, ready, getClient, view }: PartyProps & { view
   const title = kind === 'who' ? 'Qui de nous ?' : kind === 'liar' ? 'Le menteur' : kind === 'images' ? 'D’où provient cette image ?' : 'À vos crayons';
   const revealed = view.phase === 'revealed'; const final = view.phase === 'results';
   const name = (id: string) => view.participants.find(p => p.id === id)?.name ?? 'Joueur';
-  const scores = <ol className="quiz-ranking" aria-label={final ? 'Classement final' : 'Scores de la manche'}>{view.results.map(result => <li key={result.id}><span className="quiz-rank">{result.rank}</span><span>{result.name}<small>{result.detail}</small></span><strong>{result.score} points</strong><span>+{result.points}</span></li>)}</ol>;
+  const scores = <ol className="quiz-ranking" aria-label={final ? 'Classement final' : 'Scores de la manche'}>{view.results.map(result => <li key={result.id}><span className="quiz-rank">{result.rank}</span><span>{result.name}<small>{result.detail}</small></span><span className="party-score-values"><strong>{result.score} points</strong><span className="party-score-gain" aria-label={`Gain de la manche : ${result.points} points`}>+{result.points}</span></span></li>)}</ol>;
   if (final) return <section className="party-panel"><h1>Classement final</h1>{scores}{error && <p role="alert">{error}</p>}{host ? <Button disabled={!ready || busy} onClick={() => { void send({ type: 'return-lobby' }); }}>Retour au lobby</Button> : <p>L’hôte peut revenir au lobby.</p>}</section>;
   return <section className={`party-panel party-${kind} ${host ? 'party-host' : 'party-player'}`} aria-label={title}>
     <div className="eyebrow">{title} · MANCHE {view.roundNumber} / {view.totalRounds}</div>
-    <p role="timer" aria-label="Temps restant" aria-live="off">{Math.max(0, Math.ceil((view.deadline - now) / 1000))} s · {revealed ? 'Prochaine manche automatique' : 'Temps indicatif'}</p>
+    <PhaseTimer seconds={Math.max(0, Math.ceil((view.deadline - now) / 1000))} label={revealed ? view.roundNumber === view.totalRounds ? 'Classement final dans' : 'Prochaine manche dans' : view.phase === 'writing' ? 'Fin des inventions dans' : view.phase === 'voting' ? 'Fin du vote dans' : view.phase === 'choosing' ? 'Choisissez votre mot' : view.phase === 'drawing' ? 'Fin du dessin dans' : 'Fin des réponses dans'} />
     {'prompt' in view && <h1>{view.prompt}</h1>}
     {error && <p role="alert">{error}</p>}
     {!revealed && <p role="status">{view.participants.filter(p => p.done).length} / {view.participants.length} {view.phase === 'writing' ? 'inventions reçues' : kind === 'drawing' ? 'personnes ont trouvé' : 'réponses reçues'}</p>}

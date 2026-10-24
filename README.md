@@ -37,6 +37,7 @@ pnpm dev
 
 Ouvrir l’URL localhost affichée sur l’ordinateur hôte : l’application détecte l’adresse LAN pour générer le lien et le QR destinés aux téléphones du même Wi-Fi. Si plusieurs adresses sont détectées, choisir celle du réseau partagé. L’URL LAN affichée reste utilisable directement ; `localhost` ne doit pas être saisi sur les téléphones.
 
+- `pnpm dev:players ABC234` : après création de la room, ajoute deux joueurs automatiques pour tester avec un seul téléphone ; voir le guide de développement.
 - `pnpm check` : lint, typage strict, tests et compilation.
 - `pnpm exec playwright install chromium` puis `pnpm test:e2e` : tests navigateur.
 - `pnpm build` puis `pnpm start` : application compilée sur le port 3000.

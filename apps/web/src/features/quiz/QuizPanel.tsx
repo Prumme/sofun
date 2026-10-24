@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { quizViewSchema } from '@party/contracts';
 import type { QuizAction, Snapshot } from '@party/contracts';
 import { Button } from '@/components/ui/button';
+import { PhaseTimer } from '@/features/games/PhaseTimer';
 import { ChoiceGrid } from '@/features/games/ChoiceGrid';
 import { Card } from '@/components/ui/card';
 import { createRequestId } from '@/lib/realtime/request-id';
@@ -66,7 +67,7 @@ function QuizControls({ snapshot, ready, getClient }: Props) {
   return <section className={`quiz-panel ${host ? 'quiz-host' : 'quiz-player'}`} aria-labelledby="quiz-question">
     <div className="eyebrow">QUIZ · {revealed ? 'RÉVÉLATION' : 'QUESTION'} {view.questionNumber} / {view.totalQuestions}</div>
     <h1 id="quiz-question">{view.prompt}</h1>
-    {!revealed && <div className="quiz-countdown"><span>Temps restant (indicatif)</span><span role="timer" aria-label="Temps restant" aria-live="off">{seconds} s</span></div>}
+    {!revealed && <PhaseTimer seconds={seconds} label="Fin des réponses dans" />}
     <p className="quiz-progress" role="status">{answered} / {view.participants.length} réponses reçues</p>
     {error && <p role="alert">{error}</p>}
     <ChoiceGrid choices={view.choices} host={host} revealed={revealed} ownAnswer={view.ownAnswer} correctChoice={revealed ? view.correctChoice : null} ready={ready} busy={busy} onAnswer={choice => { void send({ type: 'answer', questionId: view.questionId, choice }); }} />

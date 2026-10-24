@@ -319,3 +319,9 @@ Choix fixes : triangle rose-rouge, losange cyan, cercle jaune et carré vert, co
 Le lobby hôte réutilise le visuel de l’atelier avec un moniteur et un téléphone par connexion active. L’orbite continue lente et le léger balancement constituent une exception ciblée à la préférence générale pour les animations courtes : ils restent limités au lobby hôte et sont désactivés par mouvement réduit. Deux anneaux évitent les superpositions jusqu’à douze joueurs. La liste textuelle conserve les identités hors ligne ; les téléphones joueurs n’affichent pas cette animation.
 
 Le dessin utilise exclusivement `--drawing-background` et `--drawing-ink` pour le fond blanc et le crayon noir. Les illustrations du jeu d’images sont des indices vectoriels originaux embarqués, sans ressources externes ; sources reproductibles avec les assets serveur.
+
+## 16. Résultats et transitions de phase
+
+Les valeurs numériques de classement restent insécables. Le total et le gain de manche sont regroupés dans une seule colonne alignée à droite ; les noms peuvent se répartir sur plusieurs lignes, mais jamais les chiffres d’un gain comme « +1000 ».
+
+Le chrono est présenté dans un encadré contrasté, avec une grande valeur numérique et un libellé de phase explicite (fin du vote, du dessin, prochaine manche ou classement final). Il reste visible au défilement et passe en couleur attention à cinq secondes, sans animation clignotante. La valeur reste indicative ; seul le serveur décide du changement de phase. Les lecteurs d’écran ne reçoivent pas une annonce à chaque seconde.

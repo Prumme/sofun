@@ -206,3 +206,19 @@ L’hôte administre les packs via ses credentials de session dans des en-têtes
 Les 30 images sont des indices stylisés originaux, pas des captures ou photographies. Leurs SVG, PNG et table de réponses restent dans les sources privées du serveur. La génération est reproductible, après installation de Chromium : `node scripts/generate-game-art.mjs`. Ces assets sont déjà versionnés ; cette commande n’est pas nécessaire pour lancer une soirée. Conserver le dossier `apps/server/src/content/art/` avec le checkout utilisé par `pnpm start`.
 
 Après compilation : `pnpm exec playwright test party-games lobby-design`. La suite joue deux parties de chaque nouveau jeu avec des contextes isolés, importe des packs, télécharge les modèles, vérifie les scores et les pixels du dessin, puis teste le lobby et le dessin avec douze participants. Les durées minimales réelles des résultats sont conservées ; aucun serveur de développement n’est réutilisé. Les tests unitaires contrôlent aussi la progression automatique sans réponses et les limites de ressources. La recette matérielle est dans [RECETTE-JEUX.md](RECETTE-JEUX.md).
+
+## Tester manuellement avec un seul téléphone
+
+Les seuils normaux restent inchangés : deux joueurs pour le quiz, les votes et les images ; trois pour le bluff et le dessin. Un outil local permet de compléter son téléphone par deux véritables sessions automatiques, sans ouvrir plusieurs navigateurs :
+
+1. Lancer `pnpm dev`, créer une room sur l’ordinateur et la rejoindre avec son téléphone.
+2. Dans un second terminal, exécuter `pnpm dev:players ABC234`, en remplaçant le code par celui de la room.
+3. Attendre le message « PRÊTS » et les joueurs `[DEV] Alice` / `[DEV] Benoît` dans le lobby, puis lancer le jeu depuis l’hôte.
+
+Le script utilise le `PORT` backend du `.env` (3000 par défaut), toujours sur la boucle locale. Il utilise les contrats compilés par `pnpm dev` et le client Socket.IO déjà installé ; aucune dépendance supplémentaire et aucun endpoint spécial. Il ne se lance pas automatiquement avec l’application et refuse `NODE_ENV=production`.
+
+Les participants automatiques votent, inventent et répondent via le même protocole que les téléphones. Ce sont des assistants de test, pas une IA de jeu : leurs réponses ne sont pas nécessairement correctes et les croquis sont génériques. Les scores sont toujours calculés par le vrai serveur, avec les contrôles normaux.
+
+Pour le dessin, le terminal indique le mot privé choisi par un dessinateur automatique afin de tester facilement une bonne proposition sur son téléphone. Quand on dessine soi-même, taper par exemple `mot vélo` dans ce terminal fait proposer « vélo » aux participants automatiques. Cette commande fonctionne aussi avec des mots de packs personnalisés. Aucun mot privé n’est ajouté aux vues publiques de l’application.
+
+`Ctrl+C` ou la commande `quitter` retire les deux participants ; fermer la room arrête également l’outil. Pendant une partie, leurs places suivent les règles normales de départ et ne sont nettoyées qu’au retour au lobby. Pour vérifier les parcours multijoueurs et la confidentialité, conserver les tests Playwright : cet outil facilite la recette manuelle mais ne remplace pas les assertions automatisées ni la recette sur plusieurs appareils.

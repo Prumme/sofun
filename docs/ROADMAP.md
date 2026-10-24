@@ -200,3 +200,9 @@ Statuts d’implémentation et résultats seront consignés à mesure de la livr
 Vérifications : `pnpm check` réussi (57 tests Vitest, lint, typage strict, compilation) et suite complète `pnpm test:e2e` réussie (88 tests Chromium bureau/mobile, 7,2 minutes, sans retry). Chaque nouveau jeu termine deux parties par les interfaces réelles. Les contrôles couvrent également import, modèles ZIP, scores, confidentialité, progression automatique sans intervention, effacement et pixels du dessin, restauration, douze participants et réduction des animations. Le quiz historique et ses tests de coupure/reprise restent conservés.
 
 **C12 : préparation livrée, recette physique en attente.** Suivre [RECETTE-JEUX.md](RECETTE-JEUX.md). Les profils mobiles émulés et douze contextes navigateur ne démontrent pas le fonctionnement de douze appareils sur le Wi-Fi de la soirée. R9 reste également ouverte. Les captures de contrôle des interfaces ont été inspectées ; aucune validation matérielle n’est déclarée à leur place.
+
+### Retours de recette manuelle — 24 octobre 2026
+
+Les gains de points restent insécables, y compris à 320 px de large. Un chrono partagé plus visible précise la phase et reste accessible au défilement. La commande locale `pnpm dev:players CODE_ROOM` ajoute deux participants automatiques pour parcourir les cinq jeux avec un seul téléphone ; les seuils et règles serveur restent inchangés. Voir [DEVELOPMENT.md](DEVELOPMENT.md) pour les commandes du compagnon, notamment le dessin.
+
+Vérification après corrections : `pnpm check` réussi (57 tests Vitest, lint, typage et compilation), puis `pnpm test:e2e` réussi (92 tests bureau/mobile, 8,5 minutes, sans retry). Le parcours solo assisté termine les cinq jeux, et les captures de résultats hôte/téléphone ont été inspectées. Ces contrôles ne clôturent ni C12 ni R9.
