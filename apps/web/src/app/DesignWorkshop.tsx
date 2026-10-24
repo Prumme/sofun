@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, AudioLines, Check, CheckCircle2, ChevronRight, CircleAlert, Gamepad2, Lightbulb, LoaderCircle, Monitor, Moon, PencilRuler, Radio, Smartphone, Sparkles, Users, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ConnectedOrbit } from '@/features/rooms/ConnectedOrbit';
+import { ChoiceGrid } from '@/features/games/ChoiceGrid';
 import { Input } from '@/components/ui/input';
 import { createRealtimeClient } from '@/lib/realtime/client';
 const samples = [
@@ -10,6 +12,9 @@ const samples = [
   { id: 'draw', name: 'À vos crayons', category: 'DESSIN & IMAGINATION', description: 'Un trait de génie. Ou presque.', icon: PencilRuler, accent: 'pink', players: '3–8 joueurs' },
 ] as const;
 export function DesignWorkshop() {
+  const [orbitCount, setOrbitCount] = useState(1);
+  const [choiceCount, setChoiceCount] = useState(4);
+  const [sampleChoice, setSampleChoice] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
   const [selected, setSelected] = useState<string>('quiz');
   const [loading, setLoading] = useState(false);
@@ -42,7 +47,7 @@ export function DesignWorkshop() {
           <Button asChild><a href="#components">Explorer les composants <ArrowDown size={17}/></a></Button>
         </div>
         <Card className="hero-card"><div className="preview-top"><span className="mini-label">L’ESPRIT PARTY GAMES</span><Sparkles size={17}/></div>
-          <div className="orbit"><span className="orbit-icon"><Gamepad2 size={48} strokeWidth={1.3}/></span><span className="orbit-small"><Smartphone size={19}/></span></div>
+          <ConnectedOrbit players={[{ id: "sample", name: "Joueur", connected: true }]} />
           <h2>Ensemble, simplement.</h2><p>Un écran partagé, vos téléphones.<br/>Le reste se passe autour de vous.</p>
           <div className="preview-bottom"><span><Monitor size={15}/> Écran partagé</span><span><Smartphone size={15}/> Mobile</span></div>
         </Card>
@@ -72,6 +77,8 @@ export function DesignWorkshop() {
           </Card>
         </div>
       </section>
+      <section className="section" aria-label="Lobby de démonstration"><h2>Un écran, vos téléphones.</h2><label>Téléphones de démonstration<select className="input" value={orbitCount} onChange={event => setOrbitCount(Number(event.target.value))}>{[0, 1, 6, 12].map(count => <option key={count} value={count}>{count}</option>)}</select></label><ConnectedOrbit players={Array.from({ length: orbitCount }, (_, index) => ({ id: String(index), name: `Joueur ${index + 1}`, connected: true }))} /></section>
+      <section className="section" aria-label="Réponses symboliques"><h2>Une forme, une réponse.</h2><label>Nombre de choix<select className="input" value={choiceCount} onChange={event => { setChoiceCount(Number(event.target.value)); setSampleChoice(null); }}><option value={2}>Deux</option><option value={4}>Quatre</option></select></label><ChoiceGrid choices={['Triangle', 'Losange', 'Cercle', 'Carré'].slice(0, choiceCount)} host={false} revealed={false} ownAnswer={sampleChoice} ready busy={false} onAnswer={setSampleChoice} /><p role="status">{sampleChoice === null ? "Choisissez une forme." : `Réponse ${String.fromCharCode(65 + sampleChoice)} sélectionnée.`}</p></section>
       <section id="states" className="section states-section" aria-labelledby="states-title"><div><div className="eyebrow">03 / RESSENTIR</div><h2 id="states-title">Toujours savoir où l’on en est.</h2><p>Les états s’expriment en mots, autant qu’en couleurs.</p></div><Card className="state-card"><div className="connection-line"><span className={`state-icon ${connected ? 'success-text' : 'warning-text'}`}>{connected ? <Wifi size={21}/> : <WifiOff size={21}/>}</span><div><strong data-testid="connection-status">{connected ? 'Serveur connecté' : 'Connexion en cours'}</strong><p>Connexion réelle au serveur local.</p></div><span className={`status-pill ${connected ? 'is-online' : ''}`}>{connected ? 'En ligne' : 'Hors ligne'}</span></div><div className="state-samples"><span className="success-text"><CheckCircle2 size={15}/> Validé</span><span className="warning-text"><Radio size={15}/> En attente</span><span className="error-text"><CircleAlert size={15}/> À corriger</span></div></Card></section>
       <footer><a href="/" className="brand small">partygames<span className="brand-dot">.</span></a><span>Moins d’effets. Plus de moments.</span><span><Moon size={14}/> Sombre par nature</span></footer>
     </main>

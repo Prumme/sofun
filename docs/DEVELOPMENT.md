@@ -178,3 +178,53 @@ Le proxy Vite existant relaie cette nouvelle route `/api` ; aucune modification 
 En cas d’échec HTTP, de réponse invalide ou d’absence de réponse pendant cinq secondes, un message propose « Réessayer la détection ». Une liste vide est expliquée séparément. La saisie du code et du pseudo est conservée pendant un nouvel essai. Les tests d’invitation contrôlent uniquement les réponses de découverte pour couvrir une/plusieurs/aucune adresse, erreur et reprise ; les rooms et sessions restent réelles. Les IP simulées ne démontrent pas une connexion physique à ces adresses. Le test HTTP serveur vérifie aussi la vraie route `/api/network`, son schéma et l’absence de cache.
 
 Vérifications de la finalisation du 23 octobre 2026 : `pnpm check` réussi (40 tests Vitest, lint, typage strict et compilation), puis `pnpm test:e2e` réussi (72 tests Chromium bureau/mobile, 3,7 minutes, sans retry). Les liens locaux de la documentation et `git diff --check` sont vérifiés. Le retour positif du propriétaire sur l’essai est consigné dans la fiche de recette ; les autres critères matériels R9 restent à renseigner.
+
+
+## Nouveaux jeux et bibliothèque de contenus
+
+Dans le lobby hôte, choisir un jeu puis un pack et ses paramètres. Les nouveaux jeux progressent automatiquement ; le réglage « Durée des résultats » laisse le temps de lire les votes et les points. Le classement final attend le retour au lobby. Le quiz conserve ses commandes manuelles.
+
+Ouvrir « Bibliothèque de contenus » pour télécharger un modèle ZIP, importer un ZIP ou supprimer un import inutilisé. « Actualiser la bibliothèque » récupère les imports effectués depuis une autre room. La bibliothèque est en mémoire, commune aux rooms, et perdue au redémarrage. Un pack utilisé par une partie, même au classement final, ne peut pas être supprimé. Revenir au lobby pour le libérer.
+
+### Créer un pack
+
+Le ZIP contient `manifest.json` à sa racine et, pour les images, un dossier `images/`. Les modèles téléchargeables sont directement réimportables. Ne pas ajouter de dossier parent, de `.DS_Store`, d’archive imbriquée ou de fichiers non référencés. Un message indique les entrées ou champs invalides ; aucun pack partiel n’est ajouté.
+
+Tous les manifestes contiennent `version: 1`, `game` (`who`, `liar`, `images` ou `drawing`), `title` et `items` :
+
+- `who` : `{ "question": "Qui arriverait en retard ?" }`.
+- `liar` : `{ "question": "Combien font deux plus deux ?", "truth": "Quatre", "aliases": ["4"] }`.
+- `images` : `{ "question": "Quel lieu ?", "image": "images/lieu.png", "choices": ["A", "B", "C", "D"], "correctIndex": 0 }`.
+- `drawing` : `{ "word": "vélo", "aliases": ["bicyclette"] }`.
+
+JPEG, PNG et WebP sont acceptés, avec contrôle de signature et extension. Limites : ZIP 20 Mio, contenu décompressé 50 Mio, manifest 1 Mio, bibliothèque importée 200 Mio. Les champs inconnus et chemins sortants sont refusés. Le jeu de dessin nécessite au moins `joueurs × tours + 2` mots pour proposer trois choix sans répéter les mots déjà dessinés ; le catalogue désactive le lancement si le pack est insuffisant.
+
+L’hôte administre les packs via ses credentials de session dans des en-têtes HTTP, jamais dans l’URL. Ne pas partager ces credentials. Les autres joueurs ne disposent pas des opérations d’import/suppression. Les projections ne montrent les solutions et les auteurs qu’à la révélation ; le mot du dessin n’est envoyé qu’au dessinateur avant celle-ci.
+
+### Illustration et tests
+
+Les 30 images sont des indices stylisés originaux, pas des captures ou photographies. Leurs SVG, PNG et table de réponses restent dans les sources privées du serveur. La génération est reproductible, après installation de Chromium : `node scripts/generate-game-art.mjs`. Ces assets sont déjà versionnés ; cette commande n’est pas nécessaire pour lancer une soirée. Conserver le dossier `apps/server/src/content/art/` avec le checkout utilisé par `pnpm start`.
+
+Après compilation : `pnpm exec playwright test party-games lobby-design`. La suite joue deux parties de chaque nouveau jeu avec des contextes isolés, importe des packs, télécharge les modèles, vérifie les scores et les pixels du dessin, puis teste le lobby et le dessin avec douze participants. Les durées minimales réelles des résultats sont conservées ; aucun serveur de développement n’est réutilisé. Les tests unitaires contrôlent aussi la progression automatique sans réponses et les limites de ressources. La recette matérielle est dans [RECETTE-JEUX.md](RECETTE-JEUX.md).
+
+## Tester manuellement avec un seul téléphone
+
+Les seuils normaux restent inchangés : deux joueurs pour le quiz, les votes et les images ; trois pour le bluff et le dessin. Un outil local permet de compléter son téléphone par deux véritables sessions automatiques, sans ouvrir plusieurs navigateurs :
+
+1. Lancer `pnpm dev`, créer une room sur l’ordinateur et la rejoindre avec son téléphone.
+2. Dans un second terminal, exécuter `pnpm dev:players ABC234`, en remplaçant le code par celui de la room.
+3. Attendre le message « PRÊTS » et les joueurs `[DEV] Alice` / `[DEV] Benoît` dans le lobby, puis lancer le jeu depuis l’hôte.
+
+Le script utilise le `PORT` backend du `.env` (3000 par défaut), toujours sur la boucle locale. Il utilise les contrats compilés par `pnpm dev` et le client Socket.IO déjà installé ; aucune dépendance supplémentaire et aucun endpoint spécial. Il ne se lance pas automatiquement avec l’application et refuse `NODE_ENV=production`.
+
+Les participants automatiques votent, inventent et répondent via le même protocole que les téléphones. Ce sont des assistants de test, pas une IA de jeu : leurs réponses ne sont pas nécessairement correctes et les croquis sont génériques. Les scores sont toujours calculés par le vrai serveur, avec les contrôles normaux.
+
+Pour le dessin, le terminal indique le mot privé choisi par un dessinateur automatique afin de tester facilement une bonne proposition sur son téléphone. Quand on dessine soi-même, taper par exemple `mot vélo` dans ce terminal fait proposer « vélo » aux participants automatiques. Cette commande fonctionne aussi avec des mots de packs personnalisés. Aucun mot privé n’est ajouté aux vues publiques de l’application.
+
+`Ctrl+C` ou la commande `quitter` retire les deux participants ; fermer la room arrête également l’outil. Pendant une partie, leurs places suivent les règles normales de départ et ne sont nettoyées qu’au retour au lobby. Pour vérifier les parcours multijoueurs et la confidentialité, conserver les tests Playwright : cet outil facilite la recette manuelle mais ne remplace pas les assertions automatisées ni la recette sur plusieurs appareils.
+
+### Lobby et affichage compact
+
+Le lobby hôte affiche l’invitation et les participants. « Choisir un jeu » ouvre un écran distinct ; « Retour aux participants » retrouve le même code et la même liste. Les nouveaux jeux continuent de progresser automatiquement après lancement ; le quiz historique garde ses commandes de progression.
+
+Sur téléphone, le formulaire de partage du QR est secondaire et s’ouvre avec « Partager le formulaire ». La saisie utilise une police d’au moins 16 px, sans interdire le zoom manuel. Les changements de phase remettent le contenu en haut de page. Les tests `compact-layout` contrôlent l’admission et la saisie à 375 × 667, ainsi que le lobby hôte avec douze sessions indépendantes à 1366 × 768. L’émulation Chromium ne démontre pas le comportement du clavier ni le zoom au focus de Safari iOS : à vérifier sur l’appareil réel.

@@ -4,7 +4,7 @@ import { useLanAddresses } from './useLanAddresses';
 import { QRCodeSVG } from 'qrcode.react';
 import { buildInviteUrl } from './invite';
 
-export function RoomInvite({ code = '' }: { code?: string }) {
+export function RoomInvite({ code = '', compact = false }: { code?: string; compact?: boolean }) {
   const directUrl = buildInviteUrl(window.location.origin, code);
   const needsDiscovery = !directUrl;
   const { addresses, status, retry } = useLanAddresses(needsDiscovery);
@@ -21,11 +21,11 @@ export function RoomInvite({ code = '' }: { code?: string }) {
     <Button variant="secondary" onClick={retry}>Réessayer la détection</Button>
   </div>;
   const label = code ? 'QR code pour rejoindre la room' : 'QR code pour ouvrir le formulaire joueur';
-  return <section className="room-invite" aria-label="Inviter les joueurs">
+  return <section className={`room-invite${compact ? ' room-invite--compact' : ''}`} aria-label="Inviter les joueurs">
     <div className="room-invite-qr"><QRCodeSVG role="img" aria-label={label} value={url} size={224} level="M" marginSize={4} bgColor="var(--qr-background)" fgColor="var(--qr-foreground)" title={label} /></div>
-    <div className="room-invite-details">{selector}<h2>Scannez pour rejoindre</h2><p>{code ? 'Même réseau Wi-Fi. Choisissez votre pseudo sur le téléphone.' : 'Ouvrez ce formulaire sur votre téléphone, sur le même Wi-Fi, sans saisir l’adresse de l’ordinateur.'}</p>
+    <div className="room-invite-details">{selector}{!compact && <h2>Scannez pour rejoindre</h2>}
+      <span className="invite-manual-label">Manuellement</span>
       <a href={url} className="room-invite-link" aria-label={code ? 'Lien pour rejoindre la room' : 'Lien vers le formulaire joueur'}>{url}</a>
-      <p>{code ? 'Ou saisissez le code manuellement.' : 'Saisissez ensuite le code de la room et votre pseudo.'}</p>
     </div>
   </section>;
 }

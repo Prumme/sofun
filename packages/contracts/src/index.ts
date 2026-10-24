@@ -40,3 +40,4 @@ export { quizConfigSchema, quizActionSchema, quizViewSchema } from './games/quiz
 export type { QuizConfig, QuizAction, QuizView } from './games/quiz.js';
 
 export { lanAddressSchema, networkSchema } from './network.js';
+export * from './games/party.js';

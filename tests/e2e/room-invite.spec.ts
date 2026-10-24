@@ -89,6 +89,8 @@ test('loopback without a detected LAN address explains manual entry', async ({ p
   await expect(page.getByRole('img', { name: 'QR code pour rejoindre la room', exact: true })).toHaveCount(0);
   await closeRoom(page);
   await page.goto('http://127.0.0.1:3100/join');
+  const share = page.getByRole('button', { name: 'Partager le formulaire', exact: true });
+  if (await share.isVisible()) await share.click();
   await expect(page.getByRole('note')).toContainText('adresse réseau de cet ordinateur');
   await expect(page.getByRole('img', { name: /QR code/ })).toHaveCount(0);
 });
@@ -170,6 +172,8 @@ test('discovery failure or an invalid response keeps manual admission available'
   for (const response of [{ status: 503 }, { json: { addresses: ['127.0.0.1'] } }]) {
     await page.route('**/api/network', route => route.fulfill(response));
     await page.goto('http://127.0.0.1:3100/join');
+  const share = page.getByRole('button', { name: 'Partager le formulaire', exact: true });
+  if (await share.isVisible()) await share.click();
     await expect(page.getByRole('note')).toContainText('adresse réseau');
     await expect(page.getByRole('img', { name: /QR code/ })).toHaveCount(0);
     await expect(page.getByLabel('Code de la room', { exact: true })).toBeEnabled();
@@ -184,6 +188,8 @@ test('discovery can be retried without reloading or losing the entered code and 
     ? route.fulfill({ json: { addresses: ['192.168.1.23'] } })
     : route.fulfill({ status: 503 }));
   await page.goto('http://127.0.0.1:3100/join');
+  const share = page.getByRole('button', { name: 'Partager le formulaire', exact: true });
+  if (await share.isVisible()) await share.click();
   await expect(page.getByRole('note')).toContainText('Impossible de détecter');
   await page.getByLabel('Code de la room', { exact: true }).fill('ABC234');
   await page.getByLabel('Votre pseudo', { exact: true }).fill('Alice');

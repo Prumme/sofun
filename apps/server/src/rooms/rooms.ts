@@ -1,7 +1,9 @@
 import { createHash, randomInt, randomUUID } from 'node:crypto';
-import { commandSchemas, requestSchema, responseSchema, snapshotSchema } from '@party/contracts';
+import { commandSchemas, partyGameIdSchema, credentialsSchema, requestSchema, responseSchema, snapshotSchema } from '@party/contracts';
 import type { CommandName, CommandResponse, ErrorCode, Json, Snapshot } from '@party/contracts';
 import type { GameContext, Transition } from '@party/game-sdk';
+import { GameActionError } from '../engine/engine.js';
+import type { ContentLibrary } from '../content/library.js';
 import type { Engine } from '../engine/engine.js';
 import type { Room, RoomStore } from '../storage/room-store.js';
 import { createSession, verifyToken, viewerFor } from '../sessions/sessions.js';
@@ -26,9 +28,15 @@ export class Rooms {
   private readonly departures = new Set<string>();
   private readonly cleanup: ReturnType<typeof setInterval>;
   private events: RoomEvents = { snapshot: () => {}, replace: () => {} };
-  constructor(readonly store: RoomStore, readonly engine: Engine, private readonly now: () => number = Date.now) {
+  constructor(readonly store: RoomStore, readonly engine: Engine, private readonly now: () => number = Date.now, private readonly content?: ContentLibrary) {
     this.cleanup = setInterval(() => { void this.sweep(); }, 60_000);
     this.cleanup.unref();
+  }
+  authenticateHost(input: unknown) {
+    const credentials = credentialsSchema.parse(input);
+    const room = this.room(credentials.roomId); const session = room.sessions.get(credentials.sessionId);
+    if (!session || session.role !== 'host' || this.departures.has(session.id) || !verifyToken(session, credentials.token)) throw new RoomError('FORBIDDEN', 'Session hôte requise.');
+    return room;
   }
   setEvents(events: RoomEvents): void { this.events = events; }
   private async serial<T>(key: string, run: () => T | Promise<T>): Promise<T> {
@@ -110,7 +118,7 @@ export class Rooms {
       } catch (error) {
         response = { ok: false, requestId, error: error instanceof RoomError
           ? { code: error.code, message: error.message }
-          : { code: 'ACTION_REJECTED', message: 'Action refusée.' } };
+          : { code: 'ACTION_REJECTED', message: error instanceof GameActionError ? error.message : 'Action refusée.' } };
       }
       response = responseSchema.parse(response);
       // Closing/departing must not recreate session caches deleted by the operation.
@@ -165,7 +173,16 @@ export class Rooms {
     if (name === 'game:start' && 'config' in data) {
       if (session.role !== 'host') throw new RoomError('FORBIDDEN', 'Action réservée à l’hôte.');
       if (room.game) throw new RoomError('INVALID_PHASE', 'Une partie est déjà active.');
-      const { game, transition } = this.engine.start(data.gameId, data.config, this.context(room));
+      let setupContent: Json | undefined; let packId: string | undefined;
+      if (partyGameIdSchema.safeParse(data.gameId).success && this.content) {
+        const config = data.config;
+        if (!config || typeof config !== 'object' || Array.isArray(config) || typeof config.packId !== 'string') throw new RoomError('INVALID_MESSAGE', 'Pack requis.');
+        const pack = this.content.get(config.packId);
+        if (pack.manifest.game !== data.gameId) throw new RoomError('INVALID_MESSAGE', 'Pack incompatible.');
+        setupContent = structuredClone(pack.manifest.items); packId = pack.id;
+      }
+      const { game, transition } = this.engine.start(data.gameId, data.config, { ...this.context(room), ...(setupContent ? { content: setupContent } : {}) });
+      if (packId) game.sourcePackId = packId;
       room.game = game;
       try { this.apply(room, transition); } catch (error) { room.game = null; throw error; }
       return undefined;

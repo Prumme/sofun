@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures/actors.js';
-import { closeRoom, createRoom, joinRoom } from './fixtures/rooms.js';
+import { openCatalogue, closeRoom, createRoom, joinRoom } from './fixtures/rooms.js';
 
 test('server expires a question after twenty seconds despite an advanced player clock', async ({ createActors }, testInfo) => {
   const { host, players } = await createActors(2);
@@ -9,6 +9,7 @@ test('server expires a question after twenty seconds despite an advanced player 
   const code = await createRoom(host.page);
   await joinRoom(alice, code, 'Alice');
   await joinRoom(bob, code, 'Benoît');
+  await openCatalogue(host.page);
   await host.page.getByRole('button', { name: 'Lancer le quiz', exact: true }).click();
   const timer = host.page.getByRole('timer', { name: 'Temps restant' });
   await expect(timer).toHaveText(/^(1\d|20) s$/);

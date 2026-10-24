@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures/actors.js';
-import { closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms.js';
+import { openCatalogue, closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms.js';
 
 const choices = ['B Jupiter', 'C Six', 'A Tokyo', 'D H2O', 'B Sept'];
 
@@ -27,6 +27,7 @@ test('plays two complete games without external HTTP access, keeps ties and repl
   for (const [index, player] of players.entries()) await joinRoom(player.page, code, names[index]!);
   const identities = await Promise.all(actors.map(actor => actor.page.evaluate(() => sessionStorage.getItem('party-games.session'))));
   for (let game = 0; game < 2; game++) {
+    await openCatalogue(host.page);
     await host.page.getByRole('button', { name: 'Lancer le quiz', exact: true }).click();
     for (const [index, choice] of choices.entries()) {
       for (const actor of actors) {

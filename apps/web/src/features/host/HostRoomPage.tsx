@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, CircleAlert, Gamepad2, LoaderCircle, Monitor, PencilRuler, Radio, Wifi, WifiOff } from 'lucide-react';
+import { ArrowRight, CircleAlert, Gamepad2, LoaderCircle, Monitor, PencilRuler, Radio, Wifi, WifiOff } from 'lucide-react';
 import type { Snapshot } from '@party/contracts';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { createRealtimeClient } from '@/lib/realtime/client';
 import type { ConnectionStatus } from '@/lib/realtime/client';
 import { createRequestId } from '@/lib/realtime/request-id';
+import { GameCatalogue } from '@/features/games/GameCatalogue';
+import { PartyPanel } from '@/features/games/PartyPanel';
 import { QuizPanel } from '@/features/quiz/QuizPanel';
+import { ConnectedOrbit } from '@/features/rooms/ConnectedOrbit';
 import { RoomInvite } from '@/features/rooms/RoomInvite';
 import { RoomExit } from '@/features/rooms/RoomExit';
 import { PlayersList } from '@/features/rooms/PlayersList';
@@ -24,6 +27,8 @@ export function HostRoomPage() {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [creating, setCreating] = useState(false);
+  const [catalogueOpen, setCatalogueOpen] = useState(false);
+  useEffect(() => { setCatalogueOpen(false); window.scrollTo(0, 0); }, [snapshot?.roomId, snapshot?.game?.id]);
   const [error, setError] = useState<string | null>(null);
   const client = useRef<Client | null>(null);
   const pending = useRef(false);
@@ -88,7 +93,7 @@ export function HostRoomPage() {
   const ready = status === 'ready';
   const unavailable = status === 'offline' || status === 'error';
 
-  return <div className="host-page">
+  return <div className={`host-page${room ? ' room-page' : ''}${room?.game ? ' game-page' : ''}`}>
     <a className="skip-link" href="#host-main">Aller au contenu</a>
     <header className="site-header">
       <div className="container header-inner">
@@ -114,21 +119,23 @@ export function HostRoomPage() {
       </div>}
 
       {room ? <section className="host-lobby" aria-label="Room hôte">
-        {!room.game && <>
-        <div className="eyebrow"><span className="line" /> VOTRE SOIRÉE COMMENCE ICI</div>
-        <h1 id="lobby-title">Votre room est <span>prête.</span></h1>
-        <p className="host-intro">Gardez cet écran ouvert sur l’ordinateur ou la télévision.</p>
-        <div className="host-admission">
-        <Card className="host-code-card">
-          <div className="host-code-label" id="room-code-label">CODE DE LA ROOM</div>
-          <output className="host-room-code" aria-labelledby="room-code-label" data-testid="room-code">{room.code}</output>
-          <div className="host-code-caption"><Check size={16} aria-hidden="true" /> Room créée sur le serveur local</div>
-        </Card>
-        <RoomInvite code={room.code} />
-        </div>
-        <PlayersList players={room.players} />
+        {!room.game && !catalogueOpen && <>
+          <h1 id="lobby-title">Votre room est <span>prête.</span></h1>
+          <div className="host-lobby-layout">
+            <div className="host-participants"><ConnectedOrbit players={room.players} /><PlayersList players={room.players} /></div>
+            <Card className="host-invitation-card">
+              <RoomInvite code={room.code} compact />
+              <div className="host-code-label" id="room-code-label">CODE DE LA ROOM</div>
+              <output className="host-room-code" aria-labelledby="room-code-label" data-testid="room-code">{room.code}</output>
+            </Card>
+          </div>
+          <Button onClick={() => { setCatalogueOpen(true); window.scrollTo(0, 0); }}>Choisir un jeu <ArrowRight size={18} aria-hidden="true" /></Button>
         </>}
-        <QuizPanel key={room.game?.id ?? 'lobby'} snapshot={room} ready={ready} getClient={() => client.current} />
+        {!room.game && catalogueOpen && <>
+          <Button variant="secondary" onClick={() => { setCatalogueOpen(false); window.scrollTo(0, 0); }}>Retour aux participants</Button>
+          <GameCatalogue ready={ready} playerCount={room.players.length} getClient={() => client.current} />
+        </>}
+        {room.game && (room.game.type === 'quiz' ? <QuizPanel key={room.game.id} snapshot={room} ready={ready} getClient={() => client.current} /> : <PartyPanel snapshot={room} ready={ready} getClient={() => client.current} />)}
         <RoomExit key={room.roomId} role="host" ready={ready} getClient={() => client.current} onExited={() => { latestSnapshot.current = null; setSnapshot(null); setError(null); requestId.current = null; }} />
       </section> : snapshot ? <section className="host-welcome">
         <h1>Une session est déjà <span>active.</span></h1>

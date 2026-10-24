@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { quizViewSchema } from '@party/contracts';
 import type { QuizAction, Snapshot } from '@party/contracts';
 import { Button } from '@/components/ui/button';
+import { PhaseTimer } from '@/features/games/PhaseTimer';
+import { ChoiceGrid } from '@/features/games/ChoiceGrid';
 import { Card } from '@/components/ui/card';
 import { createRequestId } from '@/lib/realtime/request-id';
 import type { createRealtimeClient } from '@/lib/realtime/client';
@@ -20,7 +22,7 @@ function QuizControls({ snapshot, ready, getClient }: Props) {
   const [error, setError] = useState<string | null>(null);
   const pending = useRef(false);
   const mounted = useRef(false);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { mounted.current = true; window.scrollTo(0, 0); return () => { mounted.current = false; }; }, []);
   const host = snapshot.viewer.role === 'host';
   const parsed = snapshot.game?.type === 'quiz' ? quizViewSchema.safeParse(snapshot.game.view) : null;
   const deadline = parsed?.success && parsed.data.phase === 'question' ? parsed.data.deadline : null;
@@ -65,16 +67,10 @@ function QuizControls({ snapshot, ready, getClient }: Props) {
   return <section className={`quiz-panel ${host ? 'quiz-host' : 'quiz-player'}`} aria-labelledby="quiz-question">
     <div className="eyebrow">QUIZ · {revealed ? 'RÉVÉLATION' : 'QUESTION'} {view.questionNumber} / {view.totalQuestions}</div>
     <h1 id="quiz-question">{view.prompt}</h1>
-    {!revealed && <div className="quiz-countdown"><span>Temps restant (indicatif)</span><span role="timer" aria-label="Temps restant" aria-live="off">{seconds} s</span></div>}
+    {!revealed && <PhaseTimer seconds={seconds} label="Fin des réponses dans" />}
     <p className="quiz-progress" role="status">{answered} / {view.participants.length} réponses reçues</p>
     {error && <p role="alert">{error}</p>}
-    <div className="quiz-choices">
-      {view.choices.map((choice, index) => host || revealed ? <Card key={index} className={`quiz-choice ${revealed && index === view.correctChoice ? 'quiz-correct' : ''}`}>
-        <span className="quiz-letter">{String.fromCharCode(65 + index)}</span><span>{choice}{revealed && index === view.correctChoice && <strong className="quiz-choice-note">Bonne réponse</strong>}{!host && view.ownAnswer === index && <span className="quiz-choice-note">Votre réponse</span>}</span>
-      </Card> : <Button key={index} variant="secondary" className="quiz-choice" disabled={!ready || busy || view.ownAnswer !== null} aria-pressed={view.ownAnswer === index} onClick={() => { void send({ type: 'answer', questionId: view.questionId, choice: index }); }}>
-        <span className="quiz-letter">{String.fromCharCode(65 + index)}</span><span>{choice}</span>
-      </Button>)}
-    </div>
+    <ChoiceGrid choices={view.choices} host={host} revealed={revealed} ownAnswer={view.ownAnswer} correctChoice={revealed ? view.correctChoice : null} ready={ready} busy={busy} onAnswer={choice => { void send({ type: 'answer', questionId: view.questionId, choice }); }} />
     {!revealed && !host && <p className="quiz-note" role="status">{view.ownAnswer !== null ? 'Réponse enregistrée. En attente de la révélation.' : 'Choisissez votre réponse. Elle sera définitive.'}</p>}
     {!revealed && host && <div className="quiz-controls"><p>La réponse sera révélée automatiquement. Vous pouvez écourter la question.</p><Button disabled={!ready || busy} onClick={() => { void send({ type: 'reveal', questionId: view.questionId }); }} aria-busy={busy}>Révéler la réponse</Button></div>}
     {revealed && <div className="quiz-results"><h2>Résultats de la question</h2><ul aria-label="Résultats de la question">

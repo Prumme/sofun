@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures/actors.js';
-import { closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms.js';
+import { openCatalogue, closeRoom, createRoom, expectPlayers, joinRoom } from './fixtures/rooms.js';
 
 const prompt = 'Quelle est la plus grande planète du système solaire ?';
 
@@ -7,10 +7,13 @@ test('host launches a quiz, two participants answer concurrently and scores are 
   const { host, players } = await createActors(2);
   const alice = players[0]!.page, bob = players[1]!.page;
   const code = await createRoom(host.page);
+  await openCatalogue(host.page);
   await expect(host.page.getByRole('button', { name: 'Lancer le quiz', exact: true })).toBeDisabled();
   await joinRoom(alice, code, 'Alice');
+  await openCatalogue(host.page);
   await expect(host.page.getByRole('button', { name: 'Lancer le quiz', exact: true })).toBeDisabled();
   await joinRoom(bob, code, 'Benoît');
+  await openCatalogue(host.page);
   await host.page.getByRole('button', { name: 'Lancer le quiz', exact: true }).evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
   for (const page of [host.page, alice, bob]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(prompt);
@@ -46,6 +49,7 @@ test('manual reveal does not require every answer and missing answers receive ze
   const code = await createRoom(host.page);
   await joinRoom(players[0]!.page, code, 'Alice');
   await joinRoom(players[1]!.page, code, 'Benoît');
+  await openCatalogue(host.page);
   await host.page.getByRole('button', { name: 'Lancer le quiz', exact: true }).click();
   await players[0]!.page.getByRole('button', { name: 'B Jupiter', exact: true }).click();
   await expect(host.page.getByText('1 / 2 réponses reçues', { exact: true })).toBeVisible();
@@ -63,6 +67,7 @@ test('quiz launch and revelation leave another room in its own lobby', async ({ 
   const otherCode = await createRoom(second.host.page);
   for (const [index, player] of first.players.entries()) await joinRoom(player.page, code, `Joueur ${index}`);
   await joinRoom(second.players[0]!.page, otherCode, 'Camille');
+  await openCatalogue(first.host.page);
   await first.host.page.getByRole('button', { name: 'Lancer le quiz', exact: true }).click();
   await first.host.page.getByRole('button', { name: 'Révéler la réponse', exact: true }).click();
   await expect(first.host.page.getByRole('heading', { name: 'Résultats de la question' })).toBeVisible();
