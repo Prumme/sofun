@@ -22,7 +22,7 @@ function QuizControls({ snapshot, ready, getClient }: Props) {
   const [error, setError] = useState<string | null>(null);
   const pending = useRef(false);
   const mounted = useRef(false);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { mounted.current = true; window.scrollTo(0, 0); return () => { mounted.current = false; }; }, []);
   const host = snapshot.viewer.role === 'host';
   const parsed = snapshot.game?.type === 'quiz' ? quizViewSchema.safeParse(snapshot.game.view) : null;
   const deadline = parsed?.success && parsed.data.phase === 'question' ? parsed.data.deadline : null;

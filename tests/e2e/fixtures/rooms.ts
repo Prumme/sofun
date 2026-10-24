@@ -31,3 +31,9 @@ export async function closeRoom(page: Page) {
   await page.getByRole('button', { name: 'Confirmer la fermeture' }).click();
   await expect(page.getByRole('button', { name: 'Créer une room', exact: true })).toBeEnabled();
 }
+
+export async function openCatalogue(page: Page) {
+  const choose = page.getByRole('button', { name: 'Choisir un jeu', exact: true });
+  if (await choose.isVisible()) await choose.click();
+  await expect(page.getByRole('heading', { name: 'Choisissez votre jeu', exact: true })).toBeVisible();
+}

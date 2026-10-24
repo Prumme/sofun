@@ -222,3 +222,9 @@ Les participants automatiques votent, inventent et répondent via le même proto
 Pour le dessin, le terminal indique le mot privé choisi par un dessinateur automatique afin de tester facilement une bonne proposition sur son téléphone. Quand on dessine soi-même, taper par exemple `mot vélo` dans ce terminal fait proposer « vélo » aux participants automatiques. Cette commande fonctionne aussi avec des mots de packs personnalisés. Aucun mot privé n’est ajouté aux vues publiques de l’application.
 
 `Ctrl+C` ou la commande `quitter` retire les deux participants ; fermer la room arrête également l’outil. Pendant une partie, leurs places suivent les règles normales de départ et ne sont nettoyées qu’au retour au lobby. Pour vérifier les parcours multijoueurs et la confidentialité, conserver les tests Playwright : cet outil facilite la recette manuelle mais ne remplace pas les assertions automatisées ni la recette sur plusieurs appareils.
+
+### Lobby et affichage compact
+
+Le lobby hôte affiche l’invitation et les participants. « Choisir un jeu » ouvre un écran distinct ; « Retour aux participants » retrouve le même code et la même liste. Les nouveaux jeux continuent de progresser automatiquement après lancement ; le quiz historique garde ses commandes de progression.
+
+Sur téléphone, le formulaire de partage du QR est secondaire et s’ouvre avec « Partager le formulaire ». La saisie utilise une police d’au moins 16 px, sans interdire le zoom manuel. Les changements de phase remettent le contenu en haut de page. Les tests `compact-layout` contrôlent l’admission et la saisie à 375 × 667, ainsi que le lobby hôte avec douze sessions indépendantes à 1366 × 768. L’émulation Chromium ne démontre pas le comportement du clavier ni le zoom au focus de Safari iOS : à vérifier sur l’appareil réel.

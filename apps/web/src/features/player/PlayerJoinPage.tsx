@@ -30,6 +30,7 @@ export function PlayerJoinPage() {
   const [code, setCode] = useState(invitation.code);
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [error, setError] = useState<string | null>(invitation.invalid ? 'Le code du lien est invalide. Saisissez le code affiché par l’hôte.' : null);
   const [fields, setFields] = useState<FieldErrors>({});
   const client = useRef<Client | null>(null);
@@ -107,7 +108,7 @@ export function PlayerJoinPage() {
   const shareCode = readInviteCode(`?code=${encodeURIComponent(code)}`).code;
   const self = room?.players.find(player => player.id === room.viewer.sessionId);
 
-  return <div className="host-page player-page">
+  return <div className={`host-page player-page${room?.game ? ' game-page' : ''}`}>
     <a className="skip-link" href="#player-main">Aller au contenu</a>
     <header className="site-header"><div className="container header-inner">
       <a href="/" className="brand" aria-label="Party Games, accueil"><span className="brand-mark"><Gamepad2 size={22} aria-hidden="true" /></span>party<span className="brand-light">games</span><span className="brand-dot">.</span></a>
@@ -139,7 +140,7 @@ export function PlayerJoinPage() {
       </section> : <section className="player-join" aria-labelledby="join-title">
         <div className="eyebrow"><span className="line" /> À VOUS DE JOUER</div>
         <h1 id="join-title">Rejoignez <span>la soirée.</span></h1>
-        <p className="player-intro">Le code est sur l’écran partagé.<br />Il ne manque plus que votre pseudo.</p>
+
         <div className="player-join-options">
         <Card className="player-form-card"><form noValidate onSubmit={event => { event.preventDefault(); void joinRoom(); }} aria-busy={joining}>
           <label htmlFor="room-code">Code de la room</label>
@@ -150,7 +151,10 @@ export function PlayerJoinPage() {
           {fields.name && <p id="name-error" className="join-field-error" role="alert">{fields.name}</p>}
           <Button type="submit" className="player-submit" disabled={!ready || joining} aria-busy={joining}>{joining ? <LoaderCircle size={18} className="spin" aria-hidden="true" /> : <ArrowRight size={18} aria-hidden="true" />}{joining ? 'Admission en cours…' : 'Rejoindre la room'}</Button>
         </form></Card>
-        <RoomInvite code={shareCode} />
+        <div className={`player-share-invite${sharing ? ' is-open' : ''}`}>
+          <Button className="player-share-toggle" variant="secondary" aria-expanded={sharing} onClick={() => setSharing(!sharing)}>{sharing ? 'Masquer le QR' : 'Partager le formulaire'}</Button>
+          <div className="player-share-content"><RoomInvite code={shareCode} /></div>
+        </div>
         </div>
       </section>}
     </main>

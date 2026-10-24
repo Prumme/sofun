@@ -19,7 +19,7 @@ export function PartyPanel(props: PartyProps) {
 function PartyControls({ snapshot, ready, getClient, view }: PartyProps & { view: View }) {
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [text, setText] = useState(''); const [notice, setNotice] = useState(''); const [now, setNow] = useState(Date.now);
   const pending = useRef(false); const mounted = useRef(true);
-  useEffect(() => { mounted.current = true; const timer = setInterval(() => setNow(Date.now()), 250); return () => { mounted.current = false; clearInterval(timer); }; }, []);
+  useEffect(() => { mounted.current = true; window.scrollTo(0, 0); const timer = setInterval(() => setNow(Date.now()), 250); return () => { mounted.current = false; clearInterval(timer); }; }, []);
   const host = snapshot.viewer.role === 'host'; const kind = snapshot.game!.type;
   async function send(action: Record<string, Json>): Promise<boolean> {
     if (pending.current || !ready) return false; const client = getClient(); if (!client) return false;
@@ -36,7 +36,7 @@ function PartyControls({ snapshot, ready, getClient, view }: PartyProps & { view
   const name = (id: string) => view.participants.find(p => p.id === id)?.name ?? 'Joueur';
   const scores = <ol className="quiz-ranking" aria-label={final ? 'Classement final' : 'Scores de la manche'}>{view.results.map(result => <li key={result.id}><span className="quiz-rank">{result.rank}</span><span>{result.name}<small>{result.detail}</small></span><span className="party-score-values"><strong>{result.score} points</strong><span className="party-score-gain" aria-label={`Gain de la manche : ${result.points} points`}>+{result.points}</span></span></li>)}</ol>;
   if (final) return <section className="party-panel"><h1>Classement final</h1>{scores}{error && <p role="alert">{error}</p>}{host ? <Button disabled={!ready || busy} onClick={() => { void send({ type: 'return-lobby' }); }}>Retour au lobby</Button> : <p>L’hôte peut revenir au lobby.</p>}</section>;
-  return <section className={`party-panel party-${kind} ${host ? 'party-host' : 'party-player'}`} aria-label={title}>
+  return <section className={`party-panel party-${kind} ${host ? 'party-host' : 'party-player'}`} aria-label={title} data-phase={view.phase} data-drawer={'drawerId' in view && view.drawerId === snapshot.viewer.sessionId}>
     <div className="eyebrow">{title} · MANCHE {view.roundNumber} / {view.totalRounds}</div>
     <PhaseTimer seconds={Math.max(0, Math.ceil((view.deadline - now) / 1000))} label={revealed ? view.roundNumber === view.totalRounds ? 'Classement final dans' : 'Prochaine manche dans' : view.phase === 'writing' ? 'Fin des inventions dans' : view.phase === 'voting' ? 'Fin du vote dans' : view.phase === 'choosing' ? 'Choisissez votre mot' : view.phase === 'drawing' ? 'Fin du dessin dans' : 'Fin des réponses dans'} />
     {'prompt' in view && <h1>{view.prompt}</h1>}

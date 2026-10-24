@@ -1,10 +1,10 @@
 import { test, expect } from './fixtures/actors.js';
-import { closeRoom, createRoom, joinRoom } from './fixtures/rooms.js';
+import { openCatalogue, closeRoom, createRoom, joinRoom } from './fixtures/rooms.js';
 import type { Page } from '@playwright/test';
 
 const key = 'party-games.session';
 async function identity(page: Page) { return page.evaluate(key => sessionStorage.getItem(key), key); }
-async function start(host: Page) { await host.getByRole('button', { name: 'Lancer le quiz', exact: true }).click(); }
+async function start(host: Page) { await openCatalogue(host); await host.getByRole('button', { name: 'Lancer le quiz', exact: true }).click(); }
 
 test('player returns to the current question with the same choice and accumulated score', async ({ createActors }, testInfo) => {
   const { host, players } = await createActors(2);
